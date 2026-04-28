@@ -14,16 +14,798 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      carts: {
+        Row: {
+          created_at: string | null
+          id: string
+          items_already_owned: string[] | null
+          list_id: string
+          options: Json
+          parent_id: string
+          selected_at: string | null
+          selected_strategy: Database["public"]["Enums"]["cart_strategy"] | null
+          short_code: string
+          student_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          items_already_owned?: string[] | null
+          list_id: string
+          options: Json
+          parent_id: string
+          selected_at?: string | null
+          selected_strategy?:
+            | Database["public"]["Enums"]["cart_strategy"]
+            | null
+          short_code: string
+          student_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          items_already_owned?: string[] | null
+          list_id?: string
+          options?: Json
+          parent_id?: string
+          selected_at?: string | null
+          selected_strategy?:
+            | Database["public"]["Enums"]["cart_strategy"]
+            | null
+          short_code?: string
+          student_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carts_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carts_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carts_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_items: {
+        Row: {
+          canonical_name: string
+          category: string
+          created_at: string | null
+          id: string
+          keywords: string[] | null
+          sample_image_url: string | null
+          typical_specs: Json | null
+          typical_unit: string | null
+        }
+        Insert: {
+          canonical_name: string
+          category: string
+          created_at?: string | null
+          id?: string
+          keywords?: string[] | null
+          sample_image_url?: string | null
+          typical_specs?: Json | null
+          typical_unit?: string | null
+        }
+        Update: {
+          canonical_name?: string
+          category?: string
+          created_at?: string | null
+          id?: string
+          keywords?: string[] | null
+          sample_image_url?: string | null
+          typical_specs?: Json | null
+          typical_unit?: string | null
+        }
+        Relationships: []
+      }
+      communications: {
+        Row: {
+          body: string
+          id: string
+          list_id: string | null
+          read_count: number | null
+          school_id: string
+          sent_at: string | null
+          sent_by: string | null
+          sent_to_count: number | null
+          title: string
+        }
+        Insert: {
+          body: string
+          id?: string
+          list_id?: string | null
+          read_count?: number | null
+          school_id: string
+          sent_at?: string | null
+          sent_by?: string | null
+          sent_to_count?: number | null
+          title: string
+        }
+        Update: {
+          body?: string
+          id?: string
+          list_id?: string | null
+          read_count?: number | null
+          school_id?: string
+          sent_at?: string | null
+          sent_by?: string | null
+          sent_to_count?: number | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communications_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communications_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communications_sent_by_fkey"
+            columns: ["sent_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deep_link_clicks: {
+        Row: {
+          cart_id: string
+          clicked_at: string | null
+          estimated_subtotal: number | null
+          id: string
+          item_count: number | null
+          parent_id: string | null
+          retailer: Database["public"]["Enums"]["retailer_slug"]
+        }
+        Insert: {
+          cart_id: string
+          clicked_at?: string | null
+          estimated_subtotal?: number | null
+          id?: string
+          item_count?: number | null
+          parent_id?: string | null
+          retailer: Database["public"]["Enums"]["retailer_slug"]
+        }
+        Update: {
+          cart_id?: string
+          clicked_at?: string | null
+          estimated_subtotal?: number | null
+          id?: string
+          item_count?: number | null
+          parent_id?: string | null
+          retailer?: Database["public"]["Enums"]["retailer_slug"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deep_link_clicks_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "carts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deep_link_clicks_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inep_schools: {
+        Row: {
+          address: string | null
+          admin_category: string | null
+          admin_dependency: string | null
+          cep: string | null
+          cep_source: string | null
+          city: string
+          education_levels: string | null
+          imported_at: string | null
+          inep_code: string
+          latitude: number | null
+          location: string | null
+          longitude: number | null
+          phone: string | null
+          restrictions: string | null
+          school_size: string | null
+          trade_name: string
+          uf: string
+        }
+        Insert: {
+          address?: string | null
+          admin_category?: string | null
+          admin_dependency?: string | null
+          cep?: string | null
+          cep_source?: string | null
+          city: string
+          education_levels?: string | null
+          imported_at?: string | null
+          inep_code: string
+          latitude?: number | null
+          location?: string | null
+          longitude?: number | null
+          phone?: string | null
+          restrictions?: string | null
+          school_size?: string | null
+          trade_name: string
+          uf: string
+        }
+        Update: {
+          address?: string | null
+          admin_category?: string | null
+          admin_dependency?: string | null
+          cep?: string | null
+          cep_source?: string | null
+          city?: string
+          education_levels?: string | null
+          imported_at?: string | null
+          inep_code?: string
+          latitude?: number | null
+          location?: string | null
+          longitude?: number | null
+          phone?: string | null
+          restrictions?: string | null
+          school_size?: string | null
+          trade_name?: string
+          uf?: string
+        }
+        Relationships: []
+      }
+      list_items: {
+        Row: {
+          catalog_match_id: string | null
+          created_at: string | null
+          id: string
+          list_id: string
+          name: string
+          notes: string | null
+          position: number
+          procon_reason: string | null
+          procon_status: Database["public"]["Enums"]["procon_severity"] | null
+          quantity: number
+          specification: string | null
+          unit: string | null
+        }
+        Insert: {
+          catalog_match_id?: string | null
+          created_at?: string | null
+          id?: string
+          list_id: string
+          name: string
+          notes?: string | null
+          position: number
+          procon_reason?: string | null
+          procon_status?: Database["public"]["Enums"]["procon_severity"] | null
+          quantity?: number
+          specification?: string | null
+          unit?: string | null
+        }
+        Update: {
+          catalog_match_id?: string | null
+          created_at?: string | null
+          id?: string
+          list_id?: string
+          name?: string
+          notes?: string | null
+          position?: number
+          procon_reason?: string | null
+          procon_status?: Database["public"]["Enums"]["procon_severity"] | null
+          quantity?: number
+          specification?: string | null
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "list_items_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lists: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          grade: string
+          id: string
+          procon_report: Json | null
+          procon_severity: Database["public"]["Enums"]["procon_severity"] | null
+          published_at: string | null
+          raw_file_url: string | null
+          school_id: string
+          school_year: number
+          source: Database["public"]["Enums"]["list_source"]
+          status: Database["public"]["Enums"]["list_status"]
+          teacher_name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          grade: string
+          id?: string
+          procon_report?: Json | null
+          procon_severity?:
+            | Database["public"]["Enums"]["procon_severity"]
+            | null
+          published_at?: string | null
+          raw_file_url?: string | null
+          school_id: string
+          school_year?: number
+          source: Database["public"]["Enums"]["list_source"]
+          status?: Database["public"]["Enums"]["list_status"]
+          teacher_name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          grade?: string
+          id?: string
+          procon_report?: Json | null
+          procon_severity?:
+            | Database["public"]["Enums"]["procon_severity"]
+            | null
+          published_at?: string | null
+          raw_file_url?: string | null
+          school_id?: string
+          school_year?: number
+          source?: Database["public"]["Enums"]["list_source"]
+          status?: Database["public"]["Enums"]["list_status"]
+          teacher_name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lists_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lists_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          cep: string | null
+          city: string | null
+          consent_analytics: boolean | null
+          consent_marketing: boolean | null
+          consent_privacy_at: string | null
+          consent_terms_at: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          state: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cep?: string | null
+          city?: string | null
+          consent_analytics?: boolean | null
+          consent_marketing?: boolean | null
+          consent_privacy_at?: string | null
+          consent_terms_at?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          state?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cep?: string | null
+          city?: string | null
+          consent_analytics?: boolean | null
+          consent_marketing?: boolean | null
+          consent_privacy_at?: string | null
+          consent_terms_at?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          state?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      retailer_links: {
+        Row: {
+          catalog_item_id: string
+          created_at: string | null
+          estimated_price: number | null
+          id: string
+          last_checked_at: string | null
+          retailer: Database["public"]["Enums"]["retailer_slug"]
+          search_url: string
+        }
+        Insert: {
+          catalog_item_id: string
+          created_at?: string | null
+          estimated_price?: number | null
+          id?: string
+          last_checked_at?: string | null
+          retailer: Database["public"]["Enums"]["retailer_slug"]
+          search_url: string
+        }
+        Update: {
+          catalog_item_id?: string
+          created_at?: string | null
+          estimated_price?: number | null
+          id?: string
+          last_checked_at?: string | null
+          retailer?: Database["public"]["Enums"]["retailer_slug"]
+          search_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retailer_links_catalog_item_id_fkey"
+            columns: ["catalog_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      school_admins: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string | null
+          school_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: string | null
+          school_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string | null
+          school_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_admins_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_admins_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schools: {
+        Row: {
+          address: string | null
+          approved_at: string | null
+          approved_by: string | null
+          cep: string | null
+          city: string
+          cnpj: string | null
+          created_at: string | null
+          created_by: string | null
+          email: string | null
+          id: string
+          inep_code: string | null
+          latitude: number | null
+          legal_name: string
+          longitude: number | null
+          neighborhood: string | null
+          phone: string | null
+          rejected_reason: string | null
+          slug: string
+          state: string
+          status: Database["public"]["Enums"]["school_status"]
+          trade_name: string
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          cep?: string | null
+          city?: string
+          cnpj?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          inep_code?: string | null
+          latitude?: number | null
+          legal_name: string
+          longitude?: number | null
+          neighborhood?: string | null
+          phone?: string | null
+          rejected_reason?: string | null
+          slug: string
+          state?: string
+          status?: Database["public"]["Enums"]["school_status"]
+          trade_name: string
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          cep?: string | null
+          city?: string
+          cnpj?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          inep_code?: string | null
+          latitude?: number | null
+          legal_name?: string
+          longitude?: number | null
+          neighborhood?: string | null
+          phone?: string | null
+          rejected_reason?: string | null
+          slug?: string
+          state?: string
+          status?: Database["public"]["Enums"]["school_status"]
+          trade_name?: string
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schools_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schools_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      students: {
+        Row: {
+          created_at: string | null
+          first_name: string
+          grade: string | null
+          id: string
+          list_id: string | null
+          parent_id: string
+          parental_consent_at: string
+          parental_consent_version: string
+          school_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          first_name: string
+          grade?: string | null
+          id?: string
+          list_id?: string | null
+          parent_id: string
+          parental_consent_at: string
+          parental_consent_version: string
+          school_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          first_name?: string
+          grade?: string | null
+          id?: string
+          list_id?: string | null
+          parent_id?: string
+          parental_consent_at?: string
+          parental_consent_version?: string
+          school_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "students_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "students_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      students_access_log: {
+        Row: {
+          accessed_at: string | null
+          accessed_by: string | null
+          action: string
+          id: string
+          student_id: string
+        }
+        Insert: {
+          accessed_at?: string | null
+          accessed_by?: string | null
+          action: string
+          id?: string
+          student_id: string
+        }
+        Update: {
+          accessed_at?: string | null
+          accessed_by?: string | null
+          action?: string
+          id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_access_log_accessed_by_fkey"
+            columns: ["accessed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "students_access_log_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_captures: {
+        Row: {
+          cart_id: string | null
+          id: string
+          media_url: string | null
+          parent_id: string | null
+          parsed_list: Json | null
+          processed_at: string | null
+          received_at: string | null
+          school_name_hint: string | null
+          sender_phone: string
+          status: string
+        }
+        Insert: {
+          cart_id?: string | null
+          id?: string
+          media_url?: string | null
+          parent_id?: string | null
+          parsed_list?: Json | null
+          processed_at?: string | null
+          received_at?: string | null
+          school_name_hint?: string | null
+          sender_phone: string
+          status?: string
+        }
+        Update: {
+          cart_id?: string | null
+          id?: string
+          media_url?: string | null
+          parent_id?: string | null
+          parsed_list?: Json | null
+          processed_at?: string | null
+          received_at?: string | null
+          school_name_hint?: string | null
+          sender_phone?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_captures_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "carts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_captures_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_short_code: { Args: never; Returns: string }
+      search_inep_schools: {
+        Args: { limit_n?: number; q: string; uf_filter?: string }
+        Returns: {
+          address: string
+          cep: string
+          city: string
+          inep_code: string
+          latitude: number
+          longitude: number
+          rank: number
+          trade_name: string
+          uf: string
+        }[]
+      }
+      slugify: { Args: { text_to_slugify: string }; Returns: string }
+      unaccent: { Args: { "": string }; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      cart_strategy: "cheapest" | "fastest" | "recommended"
+      list_source:
+        | "school_upload_pdf"
+        | "school_upload_photo"
+        | "school_manual"
+        | "whatsapp_capture"
+        | "parent_upload"
+      list_status: "draft" | "published" | "archived"
+      procon_severity: "compliant" | "warning" | "violation"
+      retailer_slug: "kalunga" | "magalu" | "mercadolivre" | "amazon"
+      school_status: "pending_approval" | "approved" | "rejected" | "suspended"
+      user_role: "parent" | "school_admin" | "platform_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +932,20 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      cart_strategy: ["cheapest", "fastest", "recommended"],
+      list_source: [
+        "school_upload_pdf",
+        "school_upload_photo",
+        "school_manual",
+        "whatsapp_capture",
+        "parent_upload",
+      ],
+      list_status: ["draft", "published", "archived"],
+      procon_severity: ["compliant", "warning", "violation"],
+      retailer_slug: ["kalunga", "magalu", "mercadolivre", "amazon"],
+      school_status: ["pending_approval", "approved", "rejected", "suspended"],
+      user_role: ["parent", "school_admin", "platform_admin"],
+    },
   },
 } as const
