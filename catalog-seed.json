@@ -1,0 +1,104 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "description": "Catalogo seed inicial com 60 itens mais comuns em listas escolares brasileiras. URLs sao de BUSCA nos varejistas (sempre funcionam), nao de produtos especificos. Cada keyword foi calibrada para o varejista usar a query certa.",
+    "last_updated": "2026-04-28",
+    "retailers": ["kalunga", "magalu", "mercadolivre", "amazon"],
+    "url_patterns": {
+      "kalunga": "https://www.kalunga.com.br/busca/0/0/0?strBusca={query}",
+      "magalu": "https://www.magazineluiza.com.br/busca/{query}/",
+      "mercadolivre": "https://lista.mercadolivre.com.br/{query}",
+      "amazon": "https://www.amazon.com.br/s?k={query}"
+    },
+    "notes": "Para o MVP, esses links de busca abrem listas reais nos varejistas. Quando avançarmos para Phase 4 (master agreement), substituiremos por links de produto especifico via API."
+  },
+  "items": [
+    { "category": "caderno", "canonical_name": "Caderno espiral universitario 96 folhas", "keywords": ["caderno", "espiral", "96", "universitario"], "typical_specs": { "tamanho": "200x275mm", "folhas": 96 }, "estimated_price": 18.90 },
+    { "category": "caderno", "canonical_name": "Caderno espiral universitario 200 folhas 1 materia", "keywords": ["caderno", "200", "universitario", "1materia"], "typical_specs": { "tamanho": "200x275mm", "folhas": 200 }, "estimated_price": 32.90 },
+    { "category": "caderno", "canonical_name": "Caderno brochurao 96 folhas capa dura", "keywords": ["caderno", "brochurao", "capa-dura", "96"], "typical_specs": { "tamanho": "200x275mm" }, "estimated_price": 22.50 },
+    { "category": "caderno", "canonical_name": "Caderno desenho cartografia 60 folhas", "keywords": ["caderno", "desenho", "cartografia"], "typical_specs": { "tamanho": "275x200mm" }, "estimated_price": 14.90 },
+    { "category": "caderno", "canonical_name": "Caderno caligrafia tipo C", "keywords": ["caderno", "caligrafia", "tipoc"], "typical_specs": { "linhas": "alfabetizacao" }, "estimated_price": 9.90 },
+    { "category": "caderno", "canonical_name": "Caderno quadriculado 1cm", "keywords": ["caderno", "quadriculado", "1cm"], "typical_specs": { "quadricula": "1cm" }, "estimated_price": 16.50 },
+
+    { "category": "lapis", "canonical_name": "Lapis preto HB nº 2", "keywords": ["lapis", "preto", "hb", "n2"], "typical_specs": { "graduacao": "HB" }, "estimated_price": 1.50 },
+    { "category": "lapis", "canonical_name": "Lapis de cor 12 cores grande", "keywords": ["lapis", "cor", "12cores"], "typical_specs": { "cores": 12 }, "estimated_price": 18.90 },
+    { "category": "lapis", "canonical_name": "Lapis de cor 24 cores", "keywords": ["lapis", "cor", "24cores"], "typical_specs": { "cores": 24 }, "estimated_price": 35.90 },
+    { "category": "lapis", "canonical_name": "Lapis de cor aquarelavel 12 cores", "keywords": ["lapis", "cor", "aquarelavel", "12"], "typical_specs": { "cores": 12, "tipo": "aquarelavel" }, "estimated_price": 28.90 },
+
+    { "category": "caneta", "canonical_name": "Caneta esferografica azul", "keywords": ["caneta", "esferografica", "azul"], "typical_specs": { "cor": "azul" }, "estimated_price": 2.50 },
+    { "category": "caneta", "canonical_name": "Caneta esferografica preta", "keywords": ["caneta", "esferografica", "preta"], "typical_specs": { "cor": "preta" }, "estimated_price": 2.50 },
+    { "category": "caneta", "canonical_name": "Caneta esferografica vermelha", "keywords": ["caneta", "esferografica", "vermelha"], "typical_specs": { "cor": "vermelha" }, "estimated_price": 2.50 },
+    { "category": "caneta", "canonical_name": "Caneta hidrocor 12 cores fina", "keywords": ["caneta", "hidrocor", "12cores", "fina"], "typical_specs": { "cores": 12, "ponta": "fina" }, "estimated_price": 18.90 },
+    { "category": "caneta", "canonical_name": "Caneta hidrocor 24 cores", "keywords": ["caneta", "hidrocor", "24cores"], "typical_specs": { "cores": 24 }, "estimated_price": 32.90 },
+
+    { "category": "borracha", "canonical_name": "Borracha branca tk", "keywords": ["borracha", "branca", "escolar"], "estimated_price": 2.90 },
+    { "category": "borracha", "canonical_name": "Borracha plastica branca grande", "keywords": ["borracha", "plastica", "grande"], "estimated_price": 4.50 },
+
+    { "category": "apontador", "canonical_name": "Apontador com deposito", "keywords": ["apontador", "com-deposito"], "estimated_price": 4.90 },
+    { "category": "apontador", "canonical_name": "Apontador metalico simples", "keywords": ["apontador", "metalico"], "estimated_price": 2.50 },
+
+    { "category": "regua", "canonical_name": "Regua 30cm acrilica transparente", "keywords": ["regua", "30cm", "acrilica"], "typical_specs": { "tamanho": "30cm" }, "estimated_price": 6.90 },
+    { "category": "regua", "canonical_name": "Regua 15cm acrilica", "keywords": ["regua", "15cm", "acrilica"], "typical_specs": { "tamanho": "15cm" }, "estimated_price": 3.90 },
+
+    { "category": "tesoura", "canonical_name": "Tesoura escolar sem ponta", "keywords": ["tesoura", "escolar", "sem-ponta"], "typical_specs": { "tipo": "sem ponta" }, "estimated_price": 8.90 },
+
+    { "category": "cola", "canonical_name": "Cola branca 90g escolar", "keywords": ["cola", "branca", "90g"], "typical_specs": { "tamanho": "90g" }, "estimated_price": 5.90 },
+    { "category": "cola", "canonical_name": "Cola bastao 21g", "keywords": ["cola", "bastao", "21g"], "typical_specs": { "tamanho": "21g" }, "estimated_price": 8.90 },
+    { "category": "cola", "canonical_name": "Cola colorida 6 cores 23g", "keywords": ["cola", "colorida", "6cores"], "typical_specs": { "cores": 6 }, "estimated_price": 9.90 },
+
+    { "category": "tinta", "canonical_name": "Tinta guache 6 cores 15ml", "keywords": ["tinta", "guache", "6cores"], "typical_specs": { "cores": 6, "tamanho": "15ml" }, "estimated_price": 14.90 },
+    { "category": "tinta", "canonical_name": "Tinta guache 12 cores 15ml", "keywords": ["tinta", "guache", "12cores"], "typical_specs": { "cores": 12 }, "estimated_price": 24.90 },
+    { "category": "tinta", "canonical_name": "Aquarela 12 cores", "keywords": ["aquarela", "12cores"], "typical_specs": { "cores": 12 }, "estimated_price": 19.90 },
+
+    { "category": "pincel", "canonical_name": "Pincel chato nº 8", "keywords": ["pincel", "chato", "n8"], "estimated_price": 5.90 },
+    { "category": "pincel", "canonical_name": "Pincel chato nº 14", "keywords": ["pincel", "chato", "n14"], "estimated_price": 8.90 },
+    { "category": "pincel", "canonical_name": "Pincel redondo nº 6", "keywords": ["pincel", "redondo", "n6"], "estimated_price": 4.90 },
+
+    { "category": "papel", "canonical_name": "Bloco papel sulfite A4 100 folhas", "keywords": ["bloco", "sulfite", "a4", "100"], "typical_specs": { "tamanho": "A4", "folhas": 100 }, "estimated_price": 18.90 },
+    { "category": "papel", "canonical_name": "Bloco papel canson A4 20 folhas", "keywords": ["canson", "a4", "20folhas"], "typical_specs": { "gramatura": "180g" }, "estimated_price": 14.90 },
+    { "category": "papel", "canonical_name": "Bloco papel cartao colorido A4", "keywords": ["papel-cartao", "colorido", "a4"], "estimated_price": 12.90 },
+    { "category": "papel", "canonical_name": "Folha eva colorida 40x60", "keywords": ["eva", "40x60", "colorido"], "typical_specs": { "tamanho": "40x60cm" }, "estimated_price": 4.50 },
+    { "category": "papel", "canonical_name": "Papel laminado prata 60x40", "keywords": ["papel", "laminado", "prata"], "estimated_price": 3.90 },
+    { "category": "papel", "canonical_name": "Papel crepom colorido", "keywords": ["papel", "crepom"], "estimated_price": 2.50 },
+
+    { "category": "estojo", "canonical_name": "Estojo escolar duas divisorias", "keywords": ["estojo", "escolar", "duas-divisorias"], "estimated_price": 35.90 },
+    { "category": "estojo", "canonical_name": "Estojo escolar tres divisorias", "keywords": ["estojo", "escolar", "3-divisorias"], "estimated_price": 49.90 },
+
+    { "category": "pasta", "canonical_name": "Pasta polionda oficio aba elastico", "keywords": ["pasta", "polionda", "oficio", "elastico"], "estimated_price": 8.90 },
+    { "category": "pasta", "canonical_name": "Pasta catalogo A4 50 plasticos", "keywords": ["pasta", "catalogo", "a4", "50"], "typical_specs": { "envelopes": 50 }, "estimated_price": 22.90 },
+    { "category": "pasta", "canonical_name": "Pasta L A4 transparente", "keywords": ["pasta-l", "a4", "transparente"], "estimated_price": 3.50 },
+
+    { "category": "fichario", "canonical_name": "Fichario universitario 4 argolas", "keywords": ["fichario", "universitario", "4argolas"], "estimated_price": 65.90 },
+    { "category": "fichario", "canonical_name": "Folha fichario universitario 200 folhas", "keywords": ["folha", "fichario", "universitario"], "estimated_price": 24.90 },
+
+    { "category": "agenda", "canonical_name": "Agenda escolar permanente", "keywords": ["agenda", "escolar", "permanente"], "estimated_price": 32.90 },
+
+    { "category": "marcador", "canonical_name": "Marcador texto fluorescente amarelo", "keywords": ["marcador", "texto", "amarelo"], "estimated_price": 5.50 },
+    { "category": "marcador", "canonical_name": "Kit marcador texto 4 cores", "keywords": ["marcador", "texto", "4cores"], "typical_specs": { "cores": 4 }, "estimated_price": 16.90 },
+    { "category": "marcador", "canonical_name": "Marcador permanente preto", "keywords": ["marcador", "permanente", "preto"], "estimated_price": 6.90 },
+
+    { "category": "compasso", "canonical_name": "Compasso escolar plastico simples", "keywords": ["compasso", "escolar", "plastico"], "estimated_price": 7.90 },
+    { "category": "compasso", "canonical_name": "Jogo geometrico 4 pecas", "keywords": ["jogo", "geometrico", "4pecas"], "estimated_price": 12.90 },
+
+    { "category": "transferidor", "canonical_name": "Transferidor 180 graus 12cm", "keywords": ["transferidor", "180", "12cm"], "estimated_price": 4.50 },
+
+    { "category": "calculadora", "canonical_name": "Calculadora cientifica basica", "keywords": ["calculadora", "cientifica"], "estimated_price": 49.90 },
+    { "category": "calculadora", "canonical_name": "Calculadora simples 8 digitos", "keywords": ["calculadora", "simples", "8digitos"], "estimated_price": 19.90 },
+
+    { "category": "fita", "canonical_name": "Fita adesiva transparente 12mm", "keywords": ["fita", "adesiva", "transparente", "12mm"], "estimated_price": 4.90 },
+    { "category": "fita", "canonical_name": "Fita crepe 19mm", "keywords": ["fita", "crepe", "19mm"], "estimated_price": 7.90 },
+    { "category": "fita", "canonical_name": "Fita dupla face 12mm", "keywords": ["fita", "dupla-face", "12mm"], "estimated_price": 6.50 },
+
+    { "category": "etiqueta", "canonical_name": "Etiqueta autoadesiva A4 redonda", "keywords": ["etiqueta", "autoadesiva", "a4"], "estimated_price": 14.90 },
+
+    { "category": "barbante", "canonical_name": "Barbante colorido novelo", "keywords": ["barbante", "colorido"], "estimated_price": 8.90 },
+
+    { "category": "argila", "canonical_name": "Massinha de modelar 12 cores", "keywords": ["massinha", "modelar", "12cores"], "typical_specs": { "cores": 12 }, "estimated_price": 19.90 },
+
+    { "category": "giz", "canonical_name": "Giz de cera 12 cores", "keywords": ["giz", "cera", "12cores"], "typical_specs": { "cores": 12 }, "estimated_price": 11.90 },
+    { "category": "giz", "canonical_name": "Gizao de cera grosso 12 cores", "keywords": ["gizao", "cera", "12cores"], "typical_specs": { "cores": 12 }, "estimated_price": 15.90 },
+
+    { "category": "dicionario", "canonical_name": "Dicionario portugues escolar", "keywords": ["dicionario", "portugues", "escolar"], "estimated_price": 49.90 },
+    { "category": "dicionario", "canonical_name": "Mini dicionario ingles portugues", "keywords": ["dicionario", "ingles-portugues", "escolar"], "estimated_price": 32.90 }
+  ]
+}
