@@ -1,124 +1,59 @@
-import { motion } from "framer-motion";
-
 type Variant = "default" | "reverse-white" | "mono-black" | "icon";
+type SizeToken = "sm" | "md" | "lg";
 
 interface LogoProps {
-  size?: number;
+  size?: SizeToken | number;
   variant?: Variant;
   className?: string;
-  withWordmark?: boolean;
 }
 
+const SIZE_PX: Record<SizeToken, number> = { sm: 18, md: 24, lg: 36 };
+
 /**
- * ListaCerta logo — C-Tick Integrado.
- * O "C" de "Certa" é um arco aberto que termina em tick.
+ * ListaCerta logo — usa os SVGs oficiais do brand book (C-Tick Integrado).
+ * - default       → wordmark azul/lime sobre fundo claro
+ * - reverse-white → wordmark branco sobre fundo escuro
+ * - mono-black    → wordmark preto puro (uso institucional)
+ * - icon          → apenas o C-Tick (ideal para favicons / app launcher)
  */
-export function Logo({
-  size = 32,
-  variant = "default",
-  className = "",
-  withWordmark = true,
-}: LogoProps) {
-  const wordmarkColor =
-    variant === "reverse-white" ? "#FFFFFF" :
-    variant === "mono-black"    ? "#0F172A" :
-                                  "#0F172A";
+export function Logo({ size = "md", variant = "default", className = "" }: LogoProps) {
+  const heightPx = typeof size === "number" ? size : SIZE_PX[size];
 
-  const arcColor =
-    variant === "reverse-white" ? "#FFFFFF" :
-    variant === "mono-black"    ? "#0F172A" :
-                                  "#1E40AF";
-
-  const tickColor =
-    variant === "mono-black" ? "#0F172A" : "#84CC16";
-
-  // Apenas o C-Tick (icon-only)
-  if (variant === "icon" || !withWordmark) {
+  if (variant === "icon") {
     return (
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 64 64"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+      <img
+        src="/symbol-ctick.svg"
+        width={heightPx}
+        height={heightPx}
+        alt="ListaCerta"
         className={className}
-        aria-label="ListaCerta"
-      >
-        {/* Arco aberto (C) */}
-        <path
-          d="M50 18 A 18 18 0 1 0 50 46"
-          stroke={arcColor}
-          strokeWidth="8"
-          strokeLinecap="round"
-          fill="none"
-        />
-        {/* Tick que sai do arco */}
-        <path
-          d="M42 38 L52 50"
-          stroke={tickColor}
-          strokeWidth="8"
-          strokeLinecap="round"
-          fill="none"
-        />
-      </svg>
+        decoding="async"
+      />
     );
   }
 
-  // Wordmark completo
-  const fontSize = size * 0.95;
+  // Wordmark — viewBox 540x112, mantemos altura e largura proporcional
+  const widthPx = Math.round((heightPx * 540) / 112);
+  const src =
+    variant === "reverse-white"
+      ? "/logo-listacerta-white.svg"
+      : variant === "mono-black"
+        ? "/logo-listacerta.svg"
+        : "/logo-listacerta.svg";
+
   return (
-    <motion.div
-      className={`inline-flex items-center ${className}`}
-      style={{ gap: size * 0.04 }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <span
-        style={{
-          fontWeight: 900,
-          fontSize,
-          letterSpacing: "-0.025em",
-          color: wordmarkColor,
-          lineHeight: 1,
-        }}
-      >
-        Lista
-      </span>
-      <svg
-        width={size * 1.05}
-        height={size * 1.1}
-        viewBox="0 0 64 64"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ marginInline: -size * 0.06 }}
-      >
-        <path
-          d="M50 18 A 18 18 0 1 0 50 46"
-          stroke={arcColor}
-          strokeWidth="8"
-          strokeLinecap="round"
-          fill="none"
-        />
-        <path
-          d="M42 38 L52 50"
-          stroke={tickColor}
-          strokeWidth="8"
-          strokeLinecap="round"
-          fill="none"
-        />
-      </svg>
-      <span
-        style={{
-          fontWeight: 900,
-          fontSize,
-          letterSpacing: "-0.025em",
-          color: wordmarkColor,
-          lineHeight: 1,
-        }}
-      >
-        erta
-      </span>
-    </motion.div>
+    <img
+      src={src}
+      width={widthPx}
+      height={heightPx}
+      alt="ListaCerta"
+      className={className}
+      decoding="async"
+      style={
+        variant === "mono-black"
+          ? { filter: "grayscale(1) brightness(0)" }
+          : undefined
+      }
+    />
   );
 }

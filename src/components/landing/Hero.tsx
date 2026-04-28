@@ -49,7 +49,7 @@ export function Hero() {
           transition={{ duration: 0.6, ease, delay: 0.2 }}
           className="mt-5 text-base md:text-lg text-lc-mid max-w-xl mx-auto lc-text-balance"
         >
-          Você busca a escola. A IA monta o carrinho. Você retira em 2 horas.
+          Você busca a escola do seu filho. A IA monta o carrinho. Você retira em 2 horas ou recebe em 24.
         </motion.p>
 
         {/* Search */}

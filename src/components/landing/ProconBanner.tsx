@@ -16,6 +16,9 @@ export function ProconBanner() {
             <ShieldCheck className="w-10 h-10 md:w-14 md:h-14 text-lc-emerald" strokeWidth={2.2} />
           </div>
           <div>
+            <span className="inline-flex items-center h-7 px-3 rounded-full bg-lc-emerald-100 text-lc-emerald text-xs font-bold tracking-wide mb-4">
+              Validador automático
+            </span>
             <h3 className="text-2xl md:text-4xl font-black tracking-tighter text-lc-ink lc-text-balance">
               Toda lista é validada Procon antes de aparecer.
             </h3>
