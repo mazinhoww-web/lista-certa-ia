@@ -23,4 +23,19 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  {
+    // shadcn/ui primitives use empty interfaces and mixed exports by design
+    files: ["src/components/ui/**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-empty-object-type": "off",
+      "react-refresh/only-export-components": "off",
+    },
+  },
+  {
+    // Tailwind/PostCSS config files use CommonJS require() per their docs
+    files: ["*.config.{ts,js}"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
 );
