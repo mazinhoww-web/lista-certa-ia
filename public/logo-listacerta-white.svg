@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 112" fill="none" role="img" aria-label="ListaCerta">
+  
+  <text y="90" fill="#FFFFFF">Lista</text>
+  <g transform="translate(280, 8) scale(0.95)">
+    <path d="M 68 24 A 32 32 0 1 0 68 76" stroke="#FFFFFF" stroke-width="10.5" stroke-linecap="butt" fill="none"></path>
+    <path d="M 68 76 L 93 51" stroke="#84CC16" stroke-width="10.5" stroke-linecap="butt" fill="none"></path>
+  </g>
+  <text y="90" x="368" fill="#FFFFFF">erta</text>
+</svg>
