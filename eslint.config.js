@@ -38,4 +38,13 @@ export default tseslint.config(
       "@typescript-eslint/no-require-imports": "off",
     },
   },
+  {
+    // React Context files conventionally export both the Provider component
+    // and the consumer hook from the same module. Fast Refresh warns on this
+    // mixed export pattern; we silence it for src/contexts/** specifically.
+    files: ["src/contexts/**/*.{ts,tsx}"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
 );

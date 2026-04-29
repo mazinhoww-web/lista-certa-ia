@@ -3,11 +3,16 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/shared/ProtectedRoute";
 import LandingPage from "./pages/LandingPage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import PrivacyPage from "./pages/PrivacyPage.tsx";
 import TermsPage from "./pages/TermsPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
+import AuthCallbackPage from "./pages/AuthCallbackPage.tsx";
+import ForbiddenPage from "./pages/ForbiddenPage.tsx";
+import MinhaContaPage from "./pages/MinhaContaPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -17,14 +22,26 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/privacidade" element={<PrivacyPage />} />
-          <Route path="/termos" element={<TermsPage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
+            <Route path="/403" element={<ForbiddenPage />} />
+            <Route path="/privacidade" element={<PrivacyPage />} />
+            <Route path="/termos" element={<TermsPage />} />
+            <Route
+              path="/minha-conta"
+              element={
+                <ProtectedRoute>
+                  <MinhaContaPage />
+                </ProtectedRoute>
+              }
+            />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
