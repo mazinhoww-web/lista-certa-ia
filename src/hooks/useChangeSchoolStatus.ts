@@ -23,7 +23,7 @@ export function useChangeSchoolStatus() {
       const { data, error } = await supabase.rpc("admin_change_school_status", {
         p_school_id: vars.schoolId,
         p_to_status: vars.toStatus,
-        p_reason: vars.reason ?? null,
+        p_reason: vars.reason ?? undefined,
       });
       if (error) {
         console.error("[useChangeSchoolStatus] rpc failed", {
