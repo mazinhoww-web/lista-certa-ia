@@ -4,9 +4,20 @@
 // the "listaescolasinep" Storage bucket into public.inep_schools.
 //
 // This is NOT a product function. It's invoked manually by the operator from
-// the browser console with a service_role bearer token. After the import is
+// the browser console with a custom-header secret. After the import is
 // validated, this function and the CSV should be deleted. Operational steps
 // in IMPORT-INEP-SCHOOLS.md (root of repo).
+//
+// Auth model: Lovable Cloud does not expose service_role in its UI, so this
+// function is gated by a custom header `x-import-secret` that the operator
+// matches against IMPORT_INEP_SECRET (a Lovable Cloud secret created
+// manually for this import). Internally the function still uses
+// SUPABASE_SERVICE_ROLE_KEY (auto-injected by Supabase into Deno.env) to
+// bypass RLS — that key is never exposed to the client.
+//
+// JWT verification is disabled for this function via supabase/config.toml
+// ([functions.import-inep-schools] verify_jwt = false), so the Supabase
+// gateway does not require an Authorization: Bearer header.
 //
 // Idempotent: uses upsert ON CONFLICT (inep_code), so reinvoking from any
 // offset is safe — duplicate rows are not created.
@@ -53,9 +64,9 @@ const CSV_COLUMNS = [
 ];
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "POST, OPTIONS",
+  "access-control-allow-headers": "content-type, x-import-secret",
 };
 
 interface CsvRow {
@@ -135,8 +146,32 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Early env validation — these are auto-injected by Supabase, but
-    // checking explicitly avoids confusing downstream errors.
+    // 1. Custom-header auth gate. The operator creates IMPORT_INEP_SECRET in
+    //    Lovable Cloud Secrets; the script in IMPORT-INEP-SCHOOLS.md / PR
+    //    description sends the same value via x-import-secret on each call.
+    const expectedSecret = Deno.env.get("IMPORT_INEP_SECRET");
+    if (!expectedSecret) {
+      logError("auth_failed", { reason: "secret_not_configured" });
+      return new Response(
+        JSON.stringify({
+          error: "secret_not_configured",
+          hint: "Create IMPORT_INEP_SECRET in Lovable Cloud Secrets",
+        }),
+        { status: 500, headers: { ...corsHeaders, "content-type": "application/json" } },
+      );
+    }
+
+    const importSecret = req.headers.get("x-import-secret");
+    if (importSecret !== expectedSecret) {
+      logError("auth_failed", { reason: "unauthorized" });
+      return new Response(
+        JSON.stringify({ error: "unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "content-type": "application/json" } },
+      );
+    }
+
+    // 2. Supabase env validation — auto-injected by the runtime, never seen
+    //    by the client. Validating early keeps error messages readable.
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
@@ -149,7 +184,7 @@ Deno.serve(async (req) => {
           error: "env_missing",
           details: "SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set",
         }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 500, headers: { ...corsHeaders, "content-type": "application/json" } },
       );
     }
 
@@ -175,7 +210,7 @@ Deno.serve(async (req) => {
       logError("download_failed", { details: dlErr?.message });
       return new Response(
         JSON.stringify({ error: "download_failed", details: dlErr?.message }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 500, headers: { ...corsHeaders, "content-type": "application/json" } },
       );
     }
 
@@ -240,18 +275,18 @@ Deno.serve(async (req) => {
         done,
         total,
         processed_until: nextOffset,
-        inserted_in_this_call: inserted,
-        skipped_invalid_rows_in_this_call: skipped,
+        inserted,
+        skipped,
         next_offset: done ? null : nextOffset,
         errors: errors.length > 0 ? errors : undefined,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { headers: { ...corsHeaders, "content-type": "application/json" } },
     );
   } catch (err) {
     logError("unexpected", { details: String(err) });
     return new Response(
       JSON.stringify({ error: "unexpected", details: String(err) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...corsHeaders, "content-type": "application/json" } },
     );
   }
 });

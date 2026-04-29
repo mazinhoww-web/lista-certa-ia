@@ -1,1 +1,9 @@
 project_id = "yicakljyulshcnfsnqbj"
+
+# Disable JWT verification for the one-shot INEP import.
+# Auth is enforced inside the function via the x-import-secret header
+# matched against the IMPORT_INEP_SECRET secret. See
+# supabase/functions/import-inep-schools/index.ts for the rationale and
+# IMPORT-INEP-SCHOOLS.md for operational steps.
+[functions.import-inep-schools]
+verify_jwt = false
