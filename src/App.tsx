@@ -15,6 +15,8 @@ import ForbiddenPage from "./pages/ForbiddenPage.tsx";
 import MinhaContaPage from "./pages/MinhaContaPage.tsx";
 import CadastrarEscolaPage from "./pages/CadastrarEscolaPage.tsx";
 import EscolaAguardandoPage from "./pages/EscolaAguardandoPage.tsx";
+import MinhasEscolasPage from "./pages/MinhasEscolasPage.tsx";
+import StatusEscolaPage from "./pages/StatusEscolaPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +55,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <EscolaAguardandoPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/minhas-escolas"
+              element={
+                <ProtectedRoute>
+                  <MinhasEscolasPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/escola/:id/status"
+              element={
+                <ProtectedRoute>
+                  <StatusEscolaPage />
                 </ProtectedRoute>
               }
             />
