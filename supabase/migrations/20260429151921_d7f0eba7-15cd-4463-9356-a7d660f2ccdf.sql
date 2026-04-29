@@ -1,0 +1,1 @@
+COMMENT ON TABLE public.school_status_log IS 'Audit log of school status transitions (LC-004). Comment refreshed to trigger types regeneration.';
