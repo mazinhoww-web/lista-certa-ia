@@ -27,6 +27,9 @@ import EscolaListaDetailPage from "./pages/escola/EscolaListaDetailPage.tsx";
 import BuscarPage from "./pages/BuscarPage.tsx";
 import EscolaPublicaPage from "./pages/EscolaPublicaPage.tsx";
 import EscolaPublicaListaPage from "./pages/EscolaPublicaListaPage.tsx";
+import MeusAlunosPage from "./pages/aluno/MeusAlunosPage.tsx";
+import CadastrarAlunoPage from "./pages/aluno/CadastrarAlunoPage.tsx";
+import AlunoListaPage from "./pages/aluno/AlunoListaPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -139,6 +142,30 @@ const App = () => (
                       <AdminEscolaDetailPage />
                     </AdminLayout>
                   </AdminGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/meus-alunos"
+              element={
+                <ProtectedRoute>
+                  <MeusAlunosPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/meus-alunos/novo"
+              element={
+                <ProtectedRoute>
+                  <CadastrarAlunoPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/meus-alunos/:studentId/lista"
+              element={
+                <ProtectedRoute>
+                  <AlunoListaPage />
                 </ProtectedRoute>
               }
             />

@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Plus, Shield } from "lucide-react";
+import { ArrowRight, Plus, Shield, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMySchools } from "@/hooks/useMySchools";
 import { useIsPlatformAdmin } from "@/hooks/useIsPlatformAdmin";
+import { useMyStudents } from "@/hooks/useMyStudents";
 import { Footer } from "@/components/landing/Footer";
 import { Logo } from "@/components/shared/Logo";
 import type { Database } from "@/integrations/supabase/types";
@@ -19,6 +20,7 @@ export default function MinhaContaPage() {
   const navigate = useNavigate();
   const { user, profile, role, signOut } = useAuth();
   const mySchools = useMySchools();
+  const myStudents = useMyStudents();
   const { isPlatformAdmin } = useIsPlatformAdmin();
 
   const onSignOut = async () => {
@@ -27,11 +29,13 @@ export default function MinhaContaPage() {
   };
 
   const schoolCount = mySchools.data?.length ?? 0;
+  const studentCount = myStudents.data?.length ?? 0;
   // Show "Cadastrar minha escola" only to parents with zero schools.
   // Once they have at least one (or any role), surface the hub instead.
   const showCadastroCta =
     role === "parent" && !mySchools.isLoading && schoolCount === 0;
   const showHubCta = !mySchools.isLoading && schoolCount > 0;
+  const showStudentsCta = !myStudents.isLoading;
 
   return (
     <div className="min-h-screen bg-lc-surface flex flex-col">
@@ -95,6 +99,26 @@ export default function MinhaContaPage() {
             >
               <ArrowRight className="w-4 h-4" aria-hidden />
               Ver minhas escolas ({schoolCount})
+            </Link>
+          </div>
+        )}
+
+        {showStudentsCta && (
+          <div className={`${showHubCta || showCadastroCta ? "mt-6" : "mt-10"} rounded-2xl bg-lc-white border border-lc-border p-5`}>
+            <h2 className="text-base font-bold text-lc-ink">Seus filhos</h2>
+            <p className="mt-1 text-sm text-lc-mid leading-relaxed">
+              {studentCount > 0
+                ? "Acompanhe a lista de cada filho e marque o que já tem em casa."
+                : "Cadastre seu filho para acompanhar a lista da escola dele."}
+            </p>
+            <Link
+              to="/meus-alunos"
+              className="mt-4 inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-lc-white border border-lc-border text-lc-ink text-sm font-semibold hover:bg-lc-surface transition-all"
+            >
+              <Users className="w-4 h-4" aria-hidden />
+              {studentCount > 0
+                ? `Meus alunos (${studentCount})`
+                : "Cadastrar meu primeiro filho"}
             </Link>
           </div>
         )}
