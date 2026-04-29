@@ -56,6 +56,12 @@ Itens não-bloqueantes de dívida técnica, slices futuras conhecidas, e protoco
 **Solução:** quebrar em `PendingActions`, `ApprovedActions`, etc. Próxima slice que tocar nesse arquivo deve fazer.
 **Quando atacar:** quando LC-004.5 ou outra slice precisar adicionar nova ação.
 
+### TD-09 — SEO técnico nas páginas públicas
+**Origem:** LC-006 (primeira slice com superfície pública indexável)
+**Estado atual:** `/buscar`, `/escola/:slug` e `/escola/:slug/lista/:listId` são acessíveis sem auth e renderizam dados reais, mas usam o `<title>` estático do `index.html`. Sem meta description dinâmica, sem OG image por escola, sem JSON-LD.
+**Solução:** instalar `react-helmet-async` (ou `vite-plugin-ssg` se quisermos SSR), adicionar Helmet em cada página pública com `title`, `description`, `og:title`, `og:description`, `og:image`, `og:url` derivados de `school.trade_name + city`. JSON-LD `EducationalOrganization` em `/escola/:slug` e `Schema.org/ItemList` em `/escola/:slug/lista/:listId`.
+**Quando atacar:** antes da primeira campanha de aquisição orgânica (provavelmente Phase 4).
+
 ---
 
 ## Slices futuras conhecidas

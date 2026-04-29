@@ -1026,6 +1026,26 @@ export type Database = {
           uf: string
         }[]
       }
+      // [LC-006 manual augment — pending CLI regen]
+      search_approved_schools: {
+        Args: {
+          q: string | null
+          uf_filter?: string | null
+          city_filter?: string | null
+          limit_n?: number
+        }
+        Returns: {
+          id: string
+          slug: string
+          trade_name: string
+          city: string
+          state: string
+          neighborhood: string | null
+          email_likely_institutional: boolean
+          published_lists_count: number
+          rank: number
+        }[]
+      }
       slugify: { Args: { text_to_slugify: string }; Returns: string }
       unaccent: { Args: { "": string }; Returns: string }
     }
