@@ -534,15 +534,11 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           email: string | null
-          // [LC-002 manual augment] regenerate via `supabase gen types typescript --linked` after merge.
-          email_likely_institutional: boolean
           id: string
           inep_code: string | null
           latitude: number | null
           legal_name: string
           longitude: number | null
-          // [LC-002 manual augment]
-          manually_added: boolean
           neighborhood: string | null
           phone: string | null
           rejected_reason: string | null
@@ -563,15 +559,11 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           email?: string | null
-          // [LC-002 manual augment]
-          email_likely_institutional?: boolean
           id?: string
           inep_code?: string | null
           latitude?: number | null
           legal_name: string
           longitude?: number | null
-          // [LC-002 manual augment]
-          manually_added?: boolean
           neighborhood?: string | null
           phone?: string | null
           rejected_reason?: string | null
@@ -592,15 +584,11 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           email?: string | null
-          // [LC-002 manual augment]
-          email_likely_institutional?: boolean
           id?: string
           inep_code?: string | null
           latitude?: number | null
           legal_name?: string
           longitude?: number | null
-          // [LC-002 manual augment]
-          manually_added?: boolean
           neighborhood?: string | null
           phone?: string | null
           rejected_reason?: string | null
@@ -788,9 +776,12 @@ export type Database = {
     }
     Functions: {
       generate_short_code: { Args: never; Returns: string }
+      get_my_role: {
+        Args: never
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
       search_inep_schools: {
-        // [LC-002 manual augment] city_filter param added; regenerate after merge.
-        Args: { limit_n?: number; q: string; uf_filter?: string; city_filter?: string }
+        Args: { limit_n?: number; q: string; uf_filter?: string }
         Returns: {
           address: string
           cep: string
