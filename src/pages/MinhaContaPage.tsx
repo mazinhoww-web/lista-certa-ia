@@ -1,5 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
+import { Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useMySchools } from "@/hooks/useMySchools";
 import { Footer } from "@/components/landing/Footer";
 import { Logo } from "@/components/shared/Logo";
 import type { Database } from "@/integrations/supabase/types";
@@ -15,11 +17,15 @@ const ROLE_LABELS: Record<Role, string> = {
 export default function MinhaContaPage() {
   const navigate = useNavigate();
   const { user, profile, role, signOut } = useAuth();
+  const mySchools = useMySchools();
 
   const onSignOut = async () => {
     await signOut();
     navigate("/", { replace: true });
   };
+
+  const showCadastroCta =
+    role === "parent" && !mySchools.isLoading && (mySchools.data?.length ?? 0) === 0;
 
   return (
     <div className="min-h-screen bg-lc-surface flex flex-col">
@@ -54,6 +60,22 @@ export default function MinhaContaPage() {
             <dd className="mt-1 text-base text-lc-ink">{profile?.city ?? "—"}</dd>
           </div>
         </dl>
+
+        {showCadastroCta && (
+          <div className="mt-10 rounded-2xl bg-lc-white border border-lc-border p-5">
+            <h2 className="text-base font-bold text-lc-ink">É administrador de uma escola?</h2>
+            <p className="mt-1 text-sm text-lc-mid leading-relaxed">
+              Cadastre sua escola para publicar listas de material e receber pedidos.
+            </p>
+            <Link
+              to="/escola/cadastrar"
+              className="mt-4 inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-lc-blue text-white text-sm font-semibold hover:opacity-90 transition-all"
+            >
+              <Plus className="w-4 h-4" aria-hidden />
+              Cadastrar minha escola
+            </Link>
+          </div>
+        )}
 
         <button
           onClick={onSignOut}
