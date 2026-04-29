@@ -1,10 +1,12 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/shared/ProtectedRoute";
+import { AdminGuard } from "@/components/admin/AdminGuard";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import LandingPage from "./pages/LandingPage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import PrivacyPage from "./pages/PrivacyPage.tsx";
@@ -17,6 +19,8 @@ import CadastrarEscolaPage from "./pages/CadastrarEscolaPage.tsx";
 import EscolaAguardandoPage from "./pages/EscolaAguardandoPage.tsx";
 import MinhasEscolasPage from "./pages/MinhasEscolasPage.tsx";
 import StatusEscolaPage from "./pages/StatusEscolaPage.tsx";
+import AdminEscolasPage from "./pages/admin/AdminEscolasPage.tsx";
+import AdminEscolaDetailPage from "./pages/admin/AdminEscolaDetailPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +75,40 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <StatusEscolaPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminGuard>
+                    <Navigate to="/admin/escolas" replace />
+                  </AdminGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/escolas"
+              element={
+                <ProtectedRoute>
+                  <AdminGuard>
+                    <AdminLayout>
+                      <AdminEscolasPage />
+                    </AdminLayout>
+                  </AdminGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/escolas/:id"
+              element={
+                <ProtectedRoute>
+                  <AdminGuard>
+                    <AdminLayout>
+                      <AdminEscolaDetailPage />
+                    </AdminLayout>
+                  </AdminGuard>
                 </ProtectedRoute>
               }
             />

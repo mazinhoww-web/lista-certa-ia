@@ -622,6 +622,52 @@ export type Database = {
           },
         ]
       }
+      // [LC-004 manual augment — pending CLI regen]
+      school_status_log: {
+        Row: {
+          id: string
+          school_id: string
+          from_status: Database["public"]["Enums"]["school_status"] | null
+          to_status: Database["public"]["Enums"]["school_status"]
+          changed_by: string
+          changed_at: string
+          reason: string | null
+        }
+        Insert: {
+          id?: string
+          school_id: string
+          from_status?: Database["public"]["Enums"]["school_status"] | null
+          to_status: Database["public"]["Enums"]["school_status"]
+          changed_by: string
+          changed_at?: string
+          reason?: string | null
+        }
+        Update: {
+          id?: string
+          school_id?: string
+          from_status?: Database["public"]["Enums"]["school_status"] | null
+          to_status?: Database["public"]["Enums"]["school_status"]
+          changed_by?: string
+          changed_at?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_status_log_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_status_log_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       students: {
         Row: {
           created_at: string | null
@@ -778,9 +824,54 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      // [LC-004 manual augment — pending CLI regen]
+      admin_schools_queue: {
+        Row: {
+          address: string | null
+          admins_count: number
+          approved_at: string | null
+          approved_by: string | null
+          cep: string | null
+          city: string | null
+          cnpj: string | null
+          created_at: string | null
+          created_by: string | null
+          email: string | null
+          email_likely_institutional: boolean | null
+          id: string | null
+          inep_code: string | null
+          latitude: number | null
+          legal_name: string | null
+          longitude: number | null
+          manually_added: boolean | null
+          neighborhood: string | null
+          phone: string | null
+          priority_score: number
+          rejected_reason: string | null
+          slug: string | null
+          state: string | null
+          status: Database["public"]["Enums"]["school_status"] | null
+          trade_name: string | null
+          updated_at: string | null
+          website: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      // [LC-004 manual augment — pending CLI regen]
+      admin_change_school_status: {
+        Args: {
+          p_school_id: string
+          p_to_status: Database["public"]["Enums"]["school_status"]
+          p_reason?: string | null
+        }
+        Returns: {
+          school_id: string
+          status: Database["public"]["Enums"]["school_status"]
+          changed_at: string
+        }[]
+      }
       generate_short_code: { Args: never; Returns: string }
       get_my_role: {
         Args: never

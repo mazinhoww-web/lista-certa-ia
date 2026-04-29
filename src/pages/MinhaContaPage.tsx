@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, Plus, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMySchools } from "@/hooks/useMySchools";
+import { useIsPlatformAdmin } from "@/hooks/useIsPlatformAdmin";
 import { Footer } from "@/components/landing/Footer";
 import { Logo } from "@/components/shared/Logo";
 import type { Database } from "@/integrations/supabase/types";
@@ -18,6 +19,7 @@ export default function MinhaContaPage() {
   const navigate = useNavigate();
   const { user, profile, role, signOut } = useAuth();
   const mySchools = useMySchools();
+  const { isPlatformAdmin } = useIsPlatformAdmin();
 
   const onSignOut = async () => {
     await signOut();
@@ -93,6 +95,22 @@ export default function MinhaContaPage() {
             >
               <ArrowRight className="w-4 h-4" aria-hidden />
               Ver minhas escolas ({schoolCount})
+            </Link>
+          </div>
+        )}
+
+        {isPlatformAdmin && (
+          <div className="mt-6 rounded-2xl bg-lc-white border border-lc-border p-5">
+            <h2 className="text-base font-bold text-lc-ink">Painel administrativo</h2>
+            <p className="mt-1 text-sm text-lc-mid leading-relaxed">
+              Triagem de escolas pendentes e gestão da plataforma.
+            </p>
+            <Link
+              to="/admin/escolas"
+              className="mt-4 inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-lc-white border border-lc-border text-lc-ink text-sm font-semibold hover:bg-lc-surface transition-all"
+            >
+              <Shield className="w-4 h-4" aria-hidden />
+              Acessar painel admin
             </Link>
           </div>
         )}
