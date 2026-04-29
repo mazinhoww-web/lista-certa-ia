@@ -294,7 +294,7 @@ Passos manuais para validar:
 - ❌ Compartilhar dados pessoais com varejistas no MVP.
 - ❌ Implementar checkout, Pix, ou qualquer coisa de pagamento (não existe no MVP).
 - ❌ Bypassar RLS via service_role no client.
-- ❌ Hardcode de URLs de produção em código (use env vars).
+- ❌ Hardcode de URLs de produção em código, EXCETO valores públicos por design (anon JWTs, URLs públicas) quando a plataforma de build não suporta env vars build-time. Quando aplicar essa exceção, documentar inline com comentário explícito. Hoje aplicada em `src/integrations/supabase/client.ts`. Issue follow-up para reverter quando Lovable Cloud suportar env vars.
 - ❌ Console.log órfão em commit final.
 - ❌ TODO sem issue número associada.
 - ❌ Commits "WIP" ou "fix" sem mensagem útil.
