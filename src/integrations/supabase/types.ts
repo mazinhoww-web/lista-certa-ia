@@ -341,6 +341,8 @@ export type Database = {
           created_by: string | null
           grade: string
           id: string
+          // [LC-005 manual augment — pending CLI regen]
+          pending_manual_digitization: boolean
           procon_report: Json | null
           procon_severity: Database["public"]["Enums"]["procon_severity"] | null
           published_at: string | null
@@ -357,6 +359,8 @@ export type Database = {
           created_by?: string | null
           grade: string
           id?: string
+          // [LC-005 manual augment]
+          pending_manual_digitization?: boolean
           procon_report?: Json | null
           procon_severity?:
             | Database["public"]["Enums"]["procon_severity"]
@@ -375,6 +379,8 @@ export type Database = {
           created_by?: string | null
           grade?: string
           id?: string
+          // [LC-005 manual augment]
+          pending_manual_digitization?: boolean
           procon_report?: Json | null
           procon_severity?:
             | Database["public"]["Enums"]["procon_severity"]
@@ -976,6 +982,25 @@ export type Database = {
           school_id: string
           status: Database["public"]["Enums"]["school_status"]
         }[]
+      }
+      // [LC-005 manual augment — pending CLI regen]
+      create_list_with_items: {
+        Args: {
+          p_school_id: string
+          p_grade: string
+          p_school_year: number
+          p_teacher_name: string | null
+          p_source: Database["public"]["Enums"]["list_source"]
+          p_pending_manual_digitization: boolean
+          p_raw_file_url: string | null
+          p_items: Json
+        }
+        Returns: string
+      }
+      // [LC-005 manual augment — pending CLI regen]
+      publish_list: {
+        Args: { p_list_id: string }
+        Returns: Database["public"]["Enums"]["list_status"]
       }
       generate_short_code: { Args: never; Returns: string }
       get_my_role: {

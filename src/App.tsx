@@ -21,6 +21,9 @@ import MinhasEscolasPage from "./pages/MinhasEscolasPage.tsx";
 import StatusEscolaPage from "./pages/StatusEscolaPage.tsx";
 import AdminEscolasPage from "./pages/admin/AdminEscolasPage.tsx";
 import AdminEscolaDetailPage from "./pages/admin/AdminEscolaDetailPage.tsx";
+import EscolaListasPage from "./pages/escola/EscolaListasPage.tsx";
+import EscolaListaNovaPage from "./pages/escola/EscolaListaNovaPage.tsx";
+import EscolaListaDetailPage from "./pages/escola/EscolaListaDetailPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +78,30 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <StatusEscolaPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/escola/:id/listas/nova"
+              element={
+                <ProtectedRoute>
+                  <EscolaListaNovaPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/escola/:id/listas/:listId"
+              element={
+                <ProtectedRoute>
+                  <EscolaListaDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/escola/:id/listas"
+              element={
+                <ProtectedRoute>
+                  <EscolaListasPage />
                 </ProtectedRoute>
               }
             />

@@ -30,8 +30,14 @@ export function StatusFooter({ school }: { school: School }) {
           Sua escola está aprovada!
         </p>
         <p className="mt-1 text-xs text-emerald-700">
-          As próximas funcionalidades chegarão em breve.
+          Publique as listas de material das suas turmas.
         </p>
+        <Link
+          to={`/escola/${school.id}/listas`}
+          className="mt-4 inline-flex h-11 px-5 rounded-xl bg-lc-blue text-white text-sm font-semibold items-center justify-center hover:opacity-90 transition-all"
+        >
+          Gerenciar listas
+        </Link>
       </section>
     );
   }
