@@ -1,0 +1,1 @@
+COMMENT ON TABLE public.schools IS 'Escolas cadastradas na plataforma ListaCerta. Inclui escolas importadas do INEP e adicionadas manualmente.';
