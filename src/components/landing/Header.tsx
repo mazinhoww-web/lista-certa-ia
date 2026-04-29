@@ -42,6 +42,12 @@ export function Header() {
               {n.label}
             </a>
           ))}
+          <Link
+            to="/buscar"
+            className="text-sm font-semibold text-lc-ink/80 hover:text-lc-blue transition-colors"
+          >
+            Buscar escola
+          </Link>
         </nav>
 
         <Link

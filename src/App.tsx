@@ -24,6 +24,9 @@ import AdminEscolaDetailPage from "./pages/admin/AdminEscolaDetailPage.tsx";
 import EscolaListasPage from "./pages/escola/EscolaListasPage.tsx";
 import EscolaListaNovaPage from "./pages/escola/EscolaListaNovaPage.tsx";
 import EscolaListaDetailPage from "./pages/escola/EscolaListaDetailPage.tsx";
+import BuscarPage from "./pages/BuscarPage.tsx";
+import EscolaPublicaPage from "./pages/EscolaPublicaPage.tsx";
+import EscolaPublicaListaPage from "./pages/EscolaPublicaListaPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -138,6 +141,20 @@ const App = () => (
                   </AdminGuard>
                 </ProtectedRoute>
               }
+            />
+            {/*
+              Public routes (LC-006). React Router v6 ranks literal segments
+              over params, so /escola/cadastrar and /escola/aguardando win
+              over /escola/:slug regardless of declaration order. The 4-seg
+              /escola/:slug/lista/:listId uses the singular "lista" while
+              the admin route uses plural "listas" — distinct literal in
+              segment 3, no ambiguity.
+            */}
+            <Route path="/buscar" element={<BuscarPage />} />
+            <Route path="/escola/:slug" element={<EscolaPublicaPage />} />
+            <Route
+              path="/escola/:slug/lista/:listId"
+              element={<EscolaPublicaListaPage />}
             />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFoundPage />} />
