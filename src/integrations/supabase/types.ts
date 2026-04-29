@@ -341,7 +341,6 @@ export type Database = {
           created_by: string | null
           grade: string
           id: string
-          // [LC-005 manual augment — pending CLI regen]
           pending_manual_digitization: boolean
           procon_report: Json | null
           procon_severity: Database["public"]["Enums"]["procon_severity"] | null
@@ -359,7 +358,6 @@ export type Database = {
           created_by?: string | null
           grade: string
           id?: string
-          // [LC-005 manual augment]
           pending_manual_digitization?: boolean
           procon_report?: Json | null
           procon_severity?:
@@ -379,7 +377,6 @@ export type Database = {
           created_by?: string | null
           grade?: string
           id?: string
-          // [LC-005 manual augment]
           pending_manual_digitization?: boolean
           procon_report?: Json | null
           procon_severity?:
@@ -983,29 +980,53 @@ export type Database = {
           status: Database["public"]["Enums"]["school_status"]
         }[]
       }
-      // [LC-005 manual augment — pending CLI regen]
       create_list_with_items: {
         Args: {
-          p_school_id: string
           p_grade: string
-          p_school_year: number
-          p_teacher_name: string | null
-          p_source: Database["public"]["Enums"]["list_source"]
-          p_pending_manual_digitization: boolean
-          p_raw_file_url: string | null
           p_items: Json
+          p_pending_manual_digitization: boolean
+          p_raw_file_url: string
+          p_school_id: string
+          p_school_year: number
+          p_source: Database["public"]["Enums"]["list_source"]
+          p_teacher_name: string
         }
-        Returns: string
-      }
-      // [LC-005 manual augment — pending CLI regen]
-      publish_list: {
-        Args: { p_list_id: string }
-        Returns: Database["public"]["Enums"]["list_status"]
+        Returns: {
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["list_status"]
+        }[]
       }
       generate_short_code: { Args: never; Returns: string }
       get_my_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
+      }
+      publish_list: {
+        Args: { p_list_id: string }
+        Returns: {
+          id: string
+          published_at: string
+          status: Database["public"]["Enums"]["list_status"]
+        }[]
+      }
+      search_approved_schools: {
+        Args: {
+          city_filter?: string
+          limit_n?: number
+          q: string
+          uf_filter?: string
+        }
+        Returns: {
+          city: string
+          id: string
+          neighborhood: string
+          published_lists_count: number
+          rank: number
+          slug: string
+          state: string
+          trade_name: string
+        }[]
       }
       search_inep_schools: {
         Args: {
@@ -1024,26 +1045,6 @@ export type Database = {
           rank: number
           trade_name: string
           uf: string
-        }[]
-      }
-      // [LC-006 manual augment — pending CLI regen]
-      search_approved_schools: {
-        Args: {
-          q: string | null
-          uf_filter?: string | null
-          city_filter?: string | null
-          limit_n?: number
-        }
-        Returns: {
-          id: string
-          slug: string
-          trade_name: string
-          city: string
-          state: string
-          neighborhood: string | null
-          email_likely_institutional: boolean
-          published_lists_count: number
-          rank: number
         }[]
       }
       slugify: { Args: { text_to_slugify: string }; Returns: string }

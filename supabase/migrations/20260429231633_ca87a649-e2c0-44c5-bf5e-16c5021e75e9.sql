@@ -1,0 +1,1 @@
+COMMENT ON FUNCTION public.search_approved_schools(text, text, text, integer) IS 'search approved schools for public discovery';
