@@ -1,17 +1,26 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Logo } from "@/components/shared/Logo";
 import { lovable } from "@/integrations/lovable";
 
+const POST_LOGIN_KEY = "lc_post_login_redirect";
+
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const location = useLocation();
 
   const onGoogle = async () => {
     setLoading(true);
+
+    // Preserve the deep-link return target across the OAuth round-trip;
+    // React Router state is lost when the browser navigates to Google.
+    const from = (location.state as { from?: string } | null)?.from;
+    if (from) sessionStorage.setItem(POST_LOGIN_KEY, from);
+
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: `${window.location.origin}/auth/callback`,
     });
 
     if (result.error) {
@@ -21,13 +30,14 @@ export default function LoginPage() {
     }
 
     if (result.redirected) {
-      // Browser irá redirecionar — nada a fazer
+      // Browser is navigating to Google — nothing more to do here.
       return;
     }
 
-    // Tokens recebidos: TODO LC-001 — implementar /auth/callback e roteamento pós-login
+    // Token-grant flow without browser redirect: Lovable already called
+    // setSession internally. Unblock the button; AuthContext will pick up the
+    // new session via onAuthStateChange and downstream routing takes over.
     setLoading(false);
-    toast.success("Pronto. Sessão iniciada.");
   };
 
   return (
