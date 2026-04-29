@@ -13,6 +13,8 @@ import NotFoundPage from "./pages/NotFoundPage.tsx";
 import AuthCallbackPage from "./pages/AuthCallbackPage.tsx";
 import ForbiddenPage from "./pages/ForbiddenPage.tsx";
 import MinhaContaPage from "./pages/MinhaContaPage.tsx";
+import CadastrarEscolaPage from "./pages/CadastrarEscolaPage.tsx";
+import EscolaAguardandoPage from "./pages/EscolaAguardandoPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +37,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <MinhaContaPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/escola/cadastrar"
+              element={
+                <ProtectedRoute>
+                  <CadastrarEscolaPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/escola/aguardando"
+              element={
+                <ProtectedRoute>
+                  <EscolaAguardandoPage />
                 </ProtectedRoute>
               }
             />
