@@ -36,10 +36,12 @@ export function useCreateList() {
         p_school_id: vars.schoolId,
         p_grade: vars.grade,
         p_school_year: vars.schoolYear,
-        p_teacher_name: vars.teacherName,
+        // RPC Args type omitted nullability after regen; runtime accepts NULL
+        // and the SQL function signature treats these params as nullable text.
+        p_teacher_name: vars.teacherName as unknown as string,
         p_source: vars.source,
         p_pending_manual_digitization: vars.pendingManualDigitization,
-        p_raw_file_url: vars.rawFileUrl,
+        p_raw_file_url: vars.rawFileUrl as unknown as string,
         // Items are typed as ListItemInput[]; the RPC accepts JSONB.
         // Cast through unknown — the runtime JSON serialization is identical.
         p_items: vars.items as unknown as Json,
@@ -52,8 +54,12 @@ export function useCreateList() {
         });
         throw error;
       }
-      // RPC returns UUID
-      return data as string;
+      // RPC returns SETOF (id, status, created_at) — take the first row's id.
+      const row = Array.isArray(data) ? data[0] : (data as { id: string } | null);
+      if (!row?.id) {
+        throw new Error("create_list_with_items returned no row");
+      }
+      return row.id;
     },
     onSuccess: (_listId, vars) => {
       qc.invalidateQueries({ queryKey: ["school-lists", vars.schoolId] });
