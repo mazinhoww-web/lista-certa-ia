@@ -148,7 +148,7 @@ export default function CadastrarEscolaPage() {
         });
       }
 
-      navigate("/escola/aguardando", { replace: true });
+      navigate(`/escola/${school.id}/status`, { replace: true });
     } finally {
       setSubmitting(false);
     }

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { ArrowRight, Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMySchools } from "@/hooks/useMySchools";
 import { Footer } from "@/components/landing/Footer";
@@ -24,8 +24,12 @@ export default function MinhaContaPage() {
     navigate("/", { replace: true });
   };
 
+  const schoolCount = mySchools.data?.length ?? 0;
+  // Show "Cadastrar minha escola" only to parents with zero schools.
+  // Once they have at least one (or any role), surface the hub instead.
   const showCadastroCta =
-    role === "parent" && !mySchools.isLoading && (mySchools.data?.length ?? 0) === 0;
+    role === "parent" && !mySchools.isLoading && schoolCount === 0;
+  const showHubCta = !mySchools.isLoading && schoolCount > 0;
 
   return (
     <div className="min-h-screen bg-lc-surface flex flex-col">
@@ -73,6 +77,22 @@ export default function MinhaContaPage() {
             >
               <Plus className="w-4 h-4" aria-hidden />
               Cadastrar minha escola
+            </Link>
+          </div>
+        )}
+
+        {showHubCta && (
+          <div className="mt-10 rounded-2xl bg-lc-white border border-lc-border p-5">
+            <h2 className="text-base font-bold text-lc-ink">Suas escolas</h2>
+            <p className="mt-1 text-sm text-lc-mid leading-relaxed">
+              Acompanhe o status de cada escola que você administra.
+            </p>
+            <Link
+              to="/minhas-escolas"
+              className="mt-4 inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-lc-blue text-white text-sm font-semibold hover:opacity-90 transition-all"
+            >
+              <ArrowRight className="w-4 h-4" aria-hidden />
+              Ver minhas escolas ({schoolCount})
             </Link>
           </div>
         )}

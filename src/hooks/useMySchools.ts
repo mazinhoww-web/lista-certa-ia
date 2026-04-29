@@ -1,6 +1,8 @@
-// Lists the schools the current user has admin access to (via school_admins).
-// Used by MinhaContaPage to decide whether to show the "Cadastrar minha
-// escola" CTA, and will also drive future role-based dashboards.
+// Lists the schools the current user has admin access to (via school_admins),
+// returning the full school row alongside the link role and join date so
+// MinhasEscolasPage can render rich cards without a second query.
+//
+// Ordered by school_admins.created_at DESC (newest link first).
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -10,8 +12,9 @@ import type { Database } from "@/integrations/supabase/types";
 type School = Database["public"]["Tables"]["schools"]["Row"];
 
 export interface MySchoolLink {
-  school: Pick<School, "id" | "trade_name" | "slug" | "status" | "city" | "state">;
-  role: string;
+  school: School;
+  role: "admin" | "editor";
+  joined_at: string;
 }
 
 export function useMySchools() {
@@ -23,10 +26,9 @@ export function useMySchools() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("school_admins")
-        .select(
-          "role, school:schools!inner(id, trade_name, slug, status, city, state)",
-        )
-        .eq("user_id", user!.id);
+        .select("role, created_at, school:schools!inner(*)")
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false });
 
       if (error) {
         console.error("[useMySchools] query failed", { message: error.message });
@@ -34,8 +36,9 @@ export function useMySchools() {
       }
 
       return (data ?? []).map((row) => ({
-        role: row.role ?? "admin",
-        school: row.school as MySchoolLink["school"],
+        role: (row.role ?? "admin") as "admin" | "editor",
+        joined_at: row.created_at ?? new Date(0).toISOString(),
+        school: row.school as School,
       }));
     },
   });
