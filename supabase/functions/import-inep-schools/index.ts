@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({
           error: "secret_not_configured",
-          details: "Set IMPORT_INEP_SECRET in Lovable Cloud → Edge Function Secrets",
+          hint: "Create IMPORT_INEP_SECRET in Lovable Cloud Secrets",
         }),
         { status: 500, headers: { ...corsHeaders, "content-type": "application/json" } },
       );
@@ -275,8 +275,8 @@ Deno.serve(async (req) => {
         done,
         total,
         processed_until: nextOffset,
-        inserted_in_this_call: inserted,
-        skipped_invalid_rows_in_this_call: skipped,
+        inserted,
+        skipped,
         next_offset: done ? null : nextOffset,
         errors: errors.length > 0 ? errors : undefined,
       }),
