@@ -534,11 +534,13 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           email: string | null
+          email_likely_institutional: boolean
           id: string
           inep_code: string | null
           latitude: number | null
           legal_name: string
           longitude: number | null
+          manually_added: boolean
           neighborhood: string | null
           phone: string | null
           rejected_reason: string | null
@@ -559,11 +561,13 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           email?: string | null
+          email_likely_institutional?: boolean
           id?: string
           inep_code?: string | null
           latitude?: number | null
           legal_name: string
           longitude?: number | null
+          manually_added?: boolean
           neighborhood?: string | null
           phone?: string | null
           rejected_reason?: string | null
@@ -584,11 +588,13 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           email?: string | null
+          email_likely_institutional?: boolean
           id?: string
           inep_code?: string | null
           latitude?: number | null
           legal_name?: string
           longitude?: number | null
+          manually_added?: boolean
           neighborhood?: string | null
           phone?: string | null
           rejected_reason?: string | null
@@ -781,7 +787,12 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       search_inep_schools: {
-        Args: { limit_n?: number; q: string; uf_filter?: string }
+        Args: {
+          city_filter?: string
+          limit_n?: number
+          q: string
+          uf_filter?: string
+        }
         Returns: {
           address: string
           cep: string
