@@ -8,6 +8,25 @@
 // validated, this function and the CSV should be deleted. Operational steps
 // in IMPORT-INEP-SCHOOLS.md (root of repo).
 //
+// Streaming architecture (revised after WORKER_RESOURCE_LIMIT OOM):
+// The earlier implementation used supabase.storage.from(...).download(...)
+// followed by blob.text() and csv parse(text). That buffered the entire
+// ~50MB file as a UTF-16 string and a parsed-row array, blowing past the
+// 150MB worker memory limit on Lovable Cloud free.
+//
+// The current implementation:
+//   1. createSignedUrl (cheap REST call) → short-lived URL.
+//   2. fetch(signedUrl) → Response whose body is a true ReadableStream.
+//   3. pipeThrough(TextDecoderStream) → string chunks.
+//   4. Hand-rolled quote-aware record splitter on a small running buffer.
+//   5. mapRow + upsert in batches of BATCH_SIZE.
+// Worker peak memory stays in the low-MB range regardless of file size
+// because chunks are dropped after they're consumed.
+//
+// Bandwidth note: with offset-based pagination over a stream, each call
+// re-reads bytes from byte 0 up to its own (offset+limit) line. Aggregate
+// download across all 91 chunks is ~4.5GB. Acceptable for a one-shot.
+//
 // Auth model: Lovable Cloud does not expose service_role in its UI, so this
 // function is gated by a custom header `x-import-secret` that the operator
 // matches against IMPORT_INEP_SECRET (a Lovable Cloud secret created
@@ -31,13 +50,14 @@
 // Don't refactor it.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { parse } from "https://deno.land/std@0.224.0/csv/parse.ts";
 
 const BUCKET = "listaescolasinep";
 const FILE_PATH = "lista_escolas_com_cep.csv";
 const BATCH_SIZE = 500;       // upsert chunk size (internal to this function)
 const DEFAULT_LIMIT = 2000;   // rows per HTTP invocation — conservative for Lovable Cloud free
 const MAX_LIMIT = 20000;
+const SIGNED_URL_TTL_SECONDS = 60;
+const SKIP_LOG_INTERVAL = 10_000; // emit lines_skipped log every N skipped rows
 
 const CSV_COLUMNS = [
   "restrição_de_atendimento",
@@ -112,6 +132,90 @@ function clean(value: string | undefined): string | null {
   return trimmed === "" ? null : trimmed;
 }
 
+// Quote-aware CSV record splitter operating on a running buffer.
+// Returns the index of the record-terminating LF (outside quotes), or -1
+// if no complete record is in the buffer yet. Multi-line quoted fields
+// are handled by skipping LFs that fall inside a "..." segment.
+//
+// Inline behavior assertions (kept as comments — not executed in prod):
+//   findRecordEnd('a,"b,c",d\nrest', 0) → returns 9   (the position of \n)
+//   findRecordEnd('a,"b\nc",d\nx',   0) → returns 9   (LF inside quotes ignored)
+//   findRecordEnd('a,"b""c",d\n',     0) → returns 10  (escaped quote handled)
+//   findRecordEnd('a,b,c',           0) → returns -1  (incomplete)
+function findRecordEnd(buf: string, startIdx: number): number {
+  let i = startIdx;
+  let inQuotes = false;
+  while (i < buf.length) {
+    const c = buf[i];
+    if (c === '"') {
+      if (inQuotes && buf[i + 1] === '"') {
+        i += 2; // escaped double-quote
+        continue;
+      }
+      inQuotes = !inQuotes;
+      i++;
+    } else if (!inQuotes && c === "\n") {
+      return i;
+    } else {
+      i++;
+    }
+  }
+  return -1;
+}
+
+// Quote-aware single-record field splitter.
+//
+// Inline behavior assertions (kept as comments — not executed in prod):
+//   parseRecord('a,"b,c",d')      → ["a", "b,c", "d"]
+//   parseRecord('a,"b""c",d')     → ["a", 'b"c', "d"]
+//   parseRecord('a,b,')           → ["a", "b", ""]
+//   parseRecord('"a\nb",c')       → ["a\nb", "c"]
+function parseRecord(record: string): string[] {
+  const out: string[] = [];
+  let cur = "";
+  let i = 0;
+  while (i < record.length) {
+    const c = record[i];
+    if (c === '"') {
+      // start (or continuation) of a quoted field
+      i++;
+      while (i < record.length) {
+        if (record[i] === '"') {
+          if (record[i + 1] === '"') {
+            cur += '"';
+            i += 2;
+          } else {
+            i++;
+            break;
+          }
+        } else {
+          cur += record[i];
+          i++;
+        }
+      }
+    } else if (c === ",") {
+      out.push(cur);
+      cur = "";
+      i++;
+    } else {
+      cur += c;
+      i++;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+
+function rowFromFields(fields: string[]): CsvRow {
+  const row: CsvRow = {};
+  for (let i = 0; i < CSV_COLUMNS.length; i++) {
+    const col = CSV_COLUMNS[i];
+    if (col === undefined) continue;
+    row[col] = fields[i] ?? "";
+  }
+  return row;
+}
+
 function mapRow(row: CsvRow): InepSchoolInsert | null {
   const inepCode = clean(row["código_inep"]);
   const tradeName = clean(row["escola"]);
@@ -146,9 +250,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // 1. Custom-header auth gate. The operator creates IMPORT_INEP_SECRET in
-    //    Lovable Cloud Secrets; the script in IMPORT-INEP-SCHOOLS.md / PR
-    //    description sends the same value via x-import-secret on each call.
+    // 1. Custom-header auth gate.
     const expectedSecret = Deno.env.get("IMPORT_INEP_SECRET");
     if (!expectedSecret) {
       logError("auth_failed", { reason: "secret_not_configured" });
@@ -170,15 +272,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 2. Supabase env validation — auto-injected by the runtime, never seen
-    //    by the client. Validating early keeps error messages readable.
+    // 2. Supabase env validation — auto-injected by the runtime.
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-      logError("env_missing", {
-        has_url: !!SUPABASE_URL,
-        has_key: !!SERVICE_ROLE_KEY,
-      });
+      logError("env_missing", { has_url: !!SUPABASE_URL, has_key: !!SERVICE_ROLE_KEY });
       return new Response(
         JSON.stringify({
           error: "env_missing",
@@ -201,49 +299,49 @@ Deno.serve(async (req) => {
 
     log("chunk_start", { offset, limit });
 
-    // 1. Download CSV from bucket
-    const { data: blob, error: dlErr } = await supabase.storage
+    // 3. Get a short-lived signed URL — cheap, no body downloaded yet.
+    const { data: signed, error: urlErr } = await supabase.storage
       .from(BUCKET)
-      .download(FILE_PATH);
-
-    if (dlErr || !blob) {
-      logError("download_failed", { details: dlErr?.message });
+      .createSignedUrl(FILE_PATH, SIGNED_URL_TTL_SECONDS);
+    if (urlErr || !signed?.signedUrl) {
+      logError("signed_url_failed", { details: urlErr?.message });
       return new Response(
-        JSON.stringify({ error: "download_failed", details: dlErr?.message }),
+        JSON.stringify({ error: "signed_url_failed", details: urlErr?.message }),
         { status: 500, headers: { ...corsHeaders, "content-type": "application/json" } },
       );
     }
+    log("signed_url_created", {});
 
-    const text = await blob.text();
-    log("csv_downloaded", { bytes: text.length });
+    // 4. Open a streaming fetch of the CSV.
+    const res = await fetch(signed.signedUrl);
+    if (!res.ok || !res.body) {
+      logError("fetch_failed", { status: res.status });
+      return new Response(
+        JSON.stringify({ error: "fetch_failed", status: res.status }),
+        { status: 500, headers: { ...corsHeaders, "content-type": "application/json" } },
+      );
+    }
+    const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+    log("stream_opened", {});
 
-    // 2. Parse CSV (columns with accents)
-    const rows = parse(text, {
-      skipFirstRow: true,
-      columns: CSV_COLUMNS,
-    }) as CsvRow[];
-
-    const total = rows.length;
-    log("csv_parsed", { total_rows: total });
-
-    const slice = rows.slice(offset, offset + limit);
-
-    // 3. Map and filter
-    const mapped = slice.map(mapRow).filter(Boolean) as InepSchoolInsert[];
-    const skipped = slice.length - mapped.length;
-
-    // 4. Upsert in batches (ON CONFLICT inep_code)
+    // 5. Stream loop: skip until offset, then process up to limit lines.
+    let buf = "";
+    let header: string[] | null = null;
+    let dataRowIdx = -1;          // 0-based index of data row (post-header)
+    let processedInThisCall = 0;
+    let skippedInvalid = 0;
     let inserted = 0;
+    // Object wrapper so TS does not narrow exitReason after closures mutate it.
+    const state: { exitReason: "limit" | "eof" } = { exitReason: "eof" };
     const errors: string[] = [];
+    let pending: InepSchoolInsert[] = [];
+    let lastSkipLogAt = 0;
 
-    for (let i = 0; i < mapped.length; i += BATCH_SIZE) {
-      const batch = mapped.slice(i, i + BATCH_SIZE);
-      const batchOffset = offset + i;
-
+    async function flushBatch(batch: InepSchoolInsert[], batchOffset: number): Promise<void> {
+      if (batch.length === 0) return;
       const { error: insErr } = await supabase
         .from("inep_schools")
         .upsert(batch, { onConflict: "inep_code", ignoreDuplicates: false });
-
       if (insErr) {
         logError("batch_failed", {
           batch_offset: batchOffset,
@@ -252,19 +350,112 @@ Deno.serve(async (req) => {
         });
         errors.push(`batch starting at ${batchOffset}: ${insErr.message}`);
       } else {
-        log("batch_upserted", { batch_offset: batchOffset, batch_size: batch.length });
         inserted += batch.length;
+        log("upsert_batch", { batch_offset: batchOffset, inserted: batch.length });
       }
     }
 
-    const nextOffset = offset + slice.length;
-    const done = nextOffset >= total;
+    const processRecord = async (record: string): Promise<void> => {
+      if (header === null) {
+        header = parseRecord(record);
+        log("header_parsed", { columns: header.length });
+        return;
+      }
+
+      dataRowIdx++;
+
+      if (dataRowIdx < offset) {
+        if (dataRowIdx - lastSkipLogAt >= SKIP_LOG_INTERVAL) {
+          log("lines_skipped", { skipped_until: dataRowIdx + 1 });
+          lastSkipLogAt = dataRowIdx;
+        }
+        return;
+      }
+
+      if (processedInThisCall >= limit) {
+        // Pre-empt: don't count this row, leave it for the next call.
+        dataRowIdx--;
+        state.exitReason = "limit";
+        return;
+      }
+
+      if (processedInThisCall === 0) {
+        log("chunk_processing", { from_row: dataRowIdx });
+      }
+
+      const fields = parseRecord(record);
+      const mapped = mapRow(rowFromFields(fields));
+      if (mapped) {
+        pending.push(mapped);
+      } else {
+        skippedInvalid++;
+      }
+      processedInThisCall++;
+
+      if (pending.length >= BATCH_SIZE) {
+        const batchOffset = offset + processedInThisCall - pending.length;
+        const batch = pending;
+        pending = [];
+        await flushBatch(batch, batchOffset);
+      }
+    };
+
+    try {
+      // Drive the stream until limit is hit or EOF reached.
+      let eof = false;
+      while (true) {
+        let recEnd = findRecordEnd(buf, 0);
+        while (recEnd === -1 && !eof) {
+          const { value, done } = await reader.read();
+          if (done) {
+            eof = true;
+            break;
+          }
+          buf += value;
+          recEnd = findRecordEnd(buf, 0);
+        }
+
+        if (recEnd === -1) {
+          // EOF and no terminating newline. Treat remaining buf as final
+          // record if non-empty (CSV files without trailing newline).
+          if (buf.trim().length > 0) {
+            const record = buf.replace(/\r$/, "");
+            buf = "";
+            await processRecord(record);
+          }
+          break;
+        }
+
+        const record = buf.slice(0, recEnd).replace(/\r$/, "");
+        buf = buf.slice(recEnd + 1);
+        await processRecord(record);
+
+        if (state.exitReason === "limit") break;
+      }
+
+      // Flush remaining partial batch.
+      if (pending.length > 0) {
+        const batchOffset = offset + processedInThisCall - pending.length;
+        await flushBatch(pending, batchOffset);
+        pending = [];
+      }
+    } finally {
+      // Always release the underlying socket / drop pending buffers.
+      try {
+        await reader.cancel();
+      } catch (_) {
+        // reader may already be closed; ignore
+      }
+    }
+
+    const done = state.exitReason === "eof";
+    const nextOffset = done ? null : offset + processedInThisCall;
 
     log("chunk_done", {
-      processed_until: nextOffset,
-      total,
+      processed_until: offset + processedInThisCall,
+      processed_in_this_call: processedInThisCall,
       inserted,
-      skipped,
+      skipped: skippedInvalid,
       done,
       errors: errors.length,
     });
@@ -273,11 +464,11 @@ Deno.serve(async (req) => {
       JSON.stringify({
         ok: true,
         done,
-        total,
-        processed_until: nextOffset,
+        total: null,
+        processed_until: offset + processedInThisCall,
         inserted,
-        skipped,
-        next_offset: done ? null : nextOffset,
+        skipped: skippedInvalid,
+        next_offset: nextOffset,
         errors: errors.length > 0 ? errors : undefined,
       }),
       { headers: { ...corsHeaders, "content-type": "application/json" } },
