@@ -44,9 +44,11 @@ export function useSearchSchools(filters: SearchFilters) {
     enabled,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("search_approved_schools", {
-        q: q.length >= MIN_QUERY_LEN ? q : null,
-        uf_filter: uf,
-        city_filter: city,
+        // RPC SQL signature treats q/uf_filter/city_filter as nullable; the
+        // generated TS Args dropped nullability after regen, so we widen.
+        q: (q.length >= MIN_QUERY_LEN ? q : null) as unknown as string,
+        uf_filter: uf as unknown as string | undefined,
+        city_filter: city as unknown as string | undefined,
         limit_n: filters.limit ?? DEFAULT_LIMIT,
       });
       if (error) {
