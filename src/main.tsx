@@ -28,4 +28,22 @@ if (isPreviewHost || isInIframe) {
   });
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+const FALLBACK_HTML = `
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0F172A;color:#F8FAFC;font-family:system-ui,sans-serif;padding:24px">
+    <div style="max-width:480px;text-align:center">
+      <h1 style="font-size:32px;font-weight:800;margin:0 0 16px;letter-spacing:-0.02em">Algo nao saiu como esperado.</h1>
+      <p style="font-size:16px;color:#64748B;margin:0 0 24px;line-height:1.6">Recarregue a pagina em alguns segundos. Se persistir, fale com a gente.</p>
+      <button onclick="location.reload()" style="background:#1E40AF;color:white;border:0;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Recarregar</button>
+      <p style="font-size:12px;color:#475569;margin:24px 0 0"><a href="mailto:contato@listacertaescolar.com.br" style="color:inherit;text-decoration:none">contato@listacertaescolar.com.br</a></p>
+    </div>
+  </div>
+`;
+
+try {
+  createRoot(document.getElementById("root")!).render(<App />);
+} catch (err) {
+  const root = document.getElementById("root");
+  if (root) root.innerHTML = FALLBACK_HTML;
+  // Re-throw to keep the error in the console / future Sentry integration.
+  throw err;
+}

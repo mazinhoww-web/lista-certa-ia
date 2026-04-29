@@ -2,8 +2,26 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// EXCEÇÃO AUTORIZADA ao CLAUDE.md §11 (proibição de hardcode de URLs prod):
+// Lovable Cloud não expõe painel de Environment Variables build-time para builds frontend.
+// Os valores abaixo são PÚBLICOS por design Supabase:
+// - VITE_SUPABASE_URL é o domínio público do projeto
+// - VITE_SUPABASE_PUBLISHABLE_KEY é o anon JWT, embutido em qualquer app Supabase frontend
+//   (visível no DevTools de qualquer usuário; protegido por RLS, não por ofuscação)
+// Sem este fallback, Lovable Cloud preview cai em tela branca por createClient(undefined, undefined).
+// Issue follow-up: migrar para env vars build-time quando Lovable Cloud suportar.
+const FALLBACK_URL = "https://yicakljyulshcnfsnqbj.supabase.co";
+const FALLBACK_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpY2FrbGp5dWxzaGNuZnNucWJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczODg5MzUsImV4cCI6MjA5Mjk2NDkzNX0.rfzp3ZVUrc6CO3TNgi28m_RLzQSBw3h7SN_ieo0whjE";
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || FALLBACK_URL;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || FALLBACK_KEY;
+
+if (!import.meta.env.VITE_SUPABASE_URL) {
+  console.warn("[supabase] Using hardcoded URL fallback (Lovable Cloud build limitation)");
+}
+if (!import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
+  console.warn("[supabase] Using hardcoded key fallback (Lovable Cloud build limitation)");
+}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
