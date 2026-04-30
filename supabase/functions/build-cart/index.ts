@@ -82,6 +82,41 @@ const ML_TOP_N = 20;
 const STALE_FALLBACK_DAYS = 7;
 
 // ============================================================
+// Open-redirect prevention for ML permalinks (LC-009)
+// ============================================================
+//
+// SYNC: This list MUST stay in sync with src/lib/wrapPermalink.ts
+// (ML_HOSTS). If you add or remove a host here, make the same change
+// there. TD-31 is the long-term fix to merge this into a single source
+// of truth shared via test fixture.
+const ML_HOSTS = new Set<string>([
+  "mercadolivre.com.br",
+  "www.mercadolivre.com.br",
+  "produto.mercadolivre.com.br",
+  "lista.mercadolivre.com.br",
+  "mercadolibre.com",
+]);
+
+/**
+ * Returns the permalink unchanged if its hostname is on ML_HOSTS,
+ * otherwise null. We refuse to persist a permalink whose host can't be
+ * verified — better to render the item with no CTA than to redirect a
+ * parent to an off-allowlist URL the API handed us.
+ */
+function validateMlPermalink(rawUrl: string | null | undefined): string | null {
+  if (!rawUrl) return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    return null;
+  }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return null;
+  if (!ML_HOSTS.has(parsed.hostname)) return null;
+  return parsed.toString();
+}
+
+// ============================================================
 // Helpers
 // ============================================================
 
@@ -313,6 +348,12 @@ function toCartItem(
       status,
     };
   }
+  // Real ML rows go through the host allowlist; mock retailers keep
+  // their hardcoded landing-page URL so the demo banner still works.
+  const safePermalink =
+    c.source === "mercadolibre"
+      ? validateMlPermalink(c.permalink)
+      : c.permalink || null;
   return {
     list_item_id: listItemId,
     list_item_name: listItemName,
@@ -324,7 +365,7 @@ function toCartItem(
     seller_name: c.seller.nickname || null,
     shipping_type: c.shipping.logistic_type ?? null,
     is_full: c.shipping.logistic_type === "fulfillment",
-    permalink: c.permalink,
+    permalink: safePermalink,
     thumbnail: c.thumbnail,
     status,
   };

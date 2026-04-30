@@ -130,6 +130,48 @@ Itens não-bloqueantes de dívida técnica, slices futuras conhecidas, e protoco
 **Solução:** quando reclamação de pai aparecer ("achei que era preço real"), gate a flag por user ou por escola via tabela `feature_flags`. Pais opt-in para ver demo, default off.
 **Quando atacar:** apenas se houver reclamação. Sem investimento preventivo.
 
+### TD-25 — Ativar afiliado Mercado Livre
+**Origem:** LC-009
+**Estado atual:** `wrapPermalink()` lê `VITE_ML_AFFILIATE_TAG` (front) e `ML_AFFILIATE_TAG` (edge function). Ambos vazios em produção; permalinks vão crus, sem receita marginal.
+**Solução:** criar conta no Mercado Ads Afiliados (gratuita, ~10 min de cadastro). Painel devolve um `tracking_id` próprio do programa. Configurar em prod e staging. Confirmar formato exato dos parâmetros (ML BR atual difere do legacy `matt_tool`/`matt_word`).
+**Quando atacar:** antes da primeira campanha de aquisição séria. Cada semana sem isso é receita não-capturada.
+
+### TD-26 — Dashboard de funnel
+**Origem:** LC-009
+**Estado atual:** eventos `cart_strategy_clicked` → `cart_strategy_redirected` → `cart_strategy_link_opened` → `cart_strategy_returned` → `cart_strategy_self_reported_purchase` ficam em `analytics_events`. Sem agregação/visualização.
+**Solução:** view materializada `funnel_daily` (cohort por dia) + página `/admin/funnel` no painel admin. KPIs: click→redirect rate, redirect→link_open rate, return rate, self-report yes rate.
+**Quando atacar:** após volume passar 50 carrinhos/dia.
+
+### TD-27 — PWA install + push notification para retorno
+**Origem:** LC-009
+**Estado atual:** pai depende de short link manual ou de lembrar de voltar. Sem gatilho do nosso lado.
+**Solução:** prompt PWA install na primeira visita após signup. Notification push 24h após `cart_strategy_clicked` se não houve `cart_strategy_returned`.
+**Quando atacar:** quando taxa de retorno cair abaixo de 30%.
+
+### TD-28 — Migrar `shortId` de prefix-de-uuid para nanoid
+**Origem:** LC-009
+**Estado atual:** `encodeShortId(strategyId) = strategyId.replace(/-/g, '').slice(0, 8)`. 16^8 ≈ 4.3B namespace; `useStrategyByShortId` retorna null se 2+ rows match (proteção contra colisão silenciosa).
+**Solução:** quando colisão for detectada uma vez em logs (ou strategies passarem de 100K), adicionar coluna `short_id TEXT UNIQUE` populada via nanoid(8). Migrar dados existentes mantendo compat.
+**Quando atacar:** primeira ocorrência de colisão detectada via `useStrategyByShortId` retornando null com motivo "collision".
+
+### TD-29 — `wrapPermalink` multi-retailer
+**Origem:** LC-009
+**Estado atual:** apenas hosts Mercado Livre na allowlist. Kalunga/Magalu são mocks com permalinks de homepage genérico.
+**Solução:** quando contratos comerciais com Kalunga e Magalu fecharem, expandir allowlist + adicionar tags de afiliado próprios. Função `wrapPermalink` ganha switch por retailer.
+**Quando atacar:** com TD-13/14/18/19.
+
+### TD-30 — A/B test do timing do self-report modal
+**Origem:** LC-009
+**Estado atual:** modal abre 24h após primeiro `cart_strategy_clicked`, máximo 1 modal por sessão. Hipótese de produto: 24h é suficiente para pai ter ido pro varejista e voltado, mas não tão tarde que ele esqueceu.
+**Solução:** experimentação A/B/C com 18h vs 24h vs 48h. Métrica primária: taxa de resposta. Secundária: distribuição yes/no/partial.
+**Quando atacar:** quando volume passar 200 self-reports/mês (n suficiente para significância em 2 semanas).
+
+### TD-31 — Sync de `ML_HOSTS` allowlist front ↔ edge function
+**Origem:** LC-009
+**Estado atual:** `ML_HOSTS` está duplicada em `src/lib/wrapPermalink.ts` (front) e `supabase/functions/build-cart/index.ts` (edge). Ambos arquivos têm comentário gritante `// SYNC: ...` apontando o outro lado.
+**Solução:** test que lê o source do edge function via `fs.readFileSync` e verifica que a constante `ML_HOSTS` do front é subset/superset/igual à do edge. Roda no `npm test`.
+**Quando atacar:** primeira vez que mudar a allowlist (adicionar `*.kalunga.com.br` em LC-013 etc) — esquecer de sincronizar é o que TD-31 evita.
+
 ---
 
 ## Slices futuras conhecidas

@@ -31,8 +31,19 @@ import MeusAlunosPage from "./pages/aluno/MeusAlunosPage.tsx";
 import CadastrarAlunoPage from "./pages/aluno/CadastrarAlunoPage.tsx";
 import AlunoListaPage from "./pages/aluno/AlunoListaPage.tsx";
 import StudentCartPage from "./pages/parent/StudentCartPage.tsx";
+import RedirectToRetailerPage from "./pages/redirect/RedirectToRetailerPage.tsx";
+import ShortLinkResolverPage from "./pages/redirect/ShortLinkResolverPage.tsx";
+import { useUtmCapture } from "@/hooks/useUtmCapture";
 
 const queryClient = new QueryClient();
+
+// Captures utm_* params from the entry URL exactly once per session.
+// Mounted under BrowserRouter so future router-aware versions can read
+// useLocation if needed; today it only touches window.location.
+function UtmCapture() {
+  useUtmCapture();
+  return null;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -40,6 +51,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <UtmCapture />
         <AuthProvider>
           <Routes>
             <Route path="/" element={<LandingPage />} />
@@ -191,6 +203,30 @@ const App = () => (
             <Route
               path="/escola/:slug/lista/:listId"
               element={<EscolaPublicaListaPage />}
+            />
+            {/*
+              LC-009 redirect funnel.
+              /r/:shortId resolves an 8-hex prefix and bounces to /ir-para.
+              /ir-para/:strategyId/:retailerKey shows the per-strategy
+              landing page with affiliate disclosure and per-item CTAs.
+              Both are protected — only the parent who owns the strategy
+              can render the cart contents (RLS enforced).
+            */}
+            <Route
+              path="/r/:shortId"
+              element={
+                <ProtectedRoute>
+                  <ShortLinkResolverPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ir-para/:strategyId/:retailerKey"
+              element={
+                <ProtectedRoute>
+                  <RedirectToRetailerPage />
+                </ProtectedRoute>
+              }
             />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFoundPage />} />

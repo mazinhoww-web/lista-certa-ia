@@ -6,18 +6,20 @@
 // PII: the student first_name appears in the page header and in
 // document.title only — never logged.
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useStudent } from "@/hooks/useStudent";
 import { useCartStrategies } from "@/hooks/useCartStrategies";
 import { useRefreshCartStrategies } from "@/hooks/useRefreshCartStrategies";
+import { useSelfReportPurchase } from "@/hooks/useSelfReportPurchase";
 import { Logo } from "@/components/shared/Logo";
 import { Footer } from "@/components/landing/Footer";
 import { CartStrategyCard } from "@/components/carrinho/CartStrategyCard";
 import { EmptyCartState } from "@/components/carrinho/EmptyCartState";
 import { LoadingStrategiesState } from "@/components/carrinho/LoadingStrategiesState";
 import { MockDataBanner } from "@/components/carrinho/MockDataBanner";
+import { PurchaseSelfReportModal } from "@/components/carrinho/PurchaseSelfReportModal";
 import { StrategyComparisonHeader } from "@/components/carrinho/StrategyComparisonHeader";
 import { UnavailableItemsBanner } from "@/components/carrinho/UnavailableItemsBanner";
 import type { CartStrategy } from "@/types/cart";
@@ -57,6 +59,19 @@ export default function StudentCartPage() {
     () => strategies.some((s) => s.items.some((i) => i.is_mock)),
     [strategies],
   );
+
+  // Self-report modal: pick the recommended strategy id (or first
+  // available) to attribute the report to. The hook gates the
+  // shouldShow logic — see useSelfReportPurchase for trigger details.
+  const reportStrategyId =
+    strategies.find((s) => s.strategy === "recommended")?.id ?? strategies[0]?.id;
+  const reportTotalItems = strategies[0]?.total_items ?? 0;
+  const selfReport = useSelfReportPurchase(reportStrategyId);
+  const [reportOpen, setReportOpen] = useState(false);
+
+  useEffect(() => {
+    if (selfReport.shouldShow) setReportOpen(true);
+  }, [selfReport.shouldShow]);
 
   // Hook ordering rule: keep all hooks above any conditional return.
   useEffect(() => {
@@ -135,6 +150,13 @@ export default function StudentCartPage() {
           </>
         )}
       </main>
+
+      <PurchaseSelfReportModal
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        totalItems={reportTotalItems}
+        onReport={selfReport.report}
+      />
 
       <Footer />
     </div>
