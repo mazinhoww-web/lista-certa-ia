@@ -698,9 +698,48 @@ export type Database = {
           },
         ]
       }
+      // [LC-007 manual augment — pending CLI regen]
+      student_owned_items: {
+        Row: {
+          id: string
+          student_id: string
+          list_item_id: string
+          marked_at: string | null
+        }
+        Insert: {
+          id?: string
+          student_id: string
+          list_item_id: string
+          marked_at?: string | null
+        }
+        Update: {
+          id?: string
+          student_id?: string
+          list_item_id?: string
+          marked_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_owned_items_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_owned_items_list_item_id_fkey"
+            columns: ["list_item_id"]
+            isOneToOne: false
+            referencedRelation: "list_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       students: {
         Row: {
           created_at: string | null
+          // [LC-007 manual augment — pending CLI regen]
+          deleted_at: string | null
           first_name: string
           grade: string | null
           id: string
@@ -709,10 +748,14 @@ export type Database = {
           parental_consent_at: string
           parental_consent_version: string
           school_id: string | null
+          // [LC-007 manual augment — pending CLI regen]
+          teacher_name: string | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          // [LC-007 manual augment]
+          deleted_at?: string | null
           first_name: string
           grade?: string | null
           id?: string
@@ -721,10 +764,14 @@ export type Database = {
           parental_consent_at: string
           parental_consent_version: string
           school_id?: string | null
+          // [LC-007 manual augment]
+          teacher_name?: string | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          // [LC-007 manual augment]
+          deleted_at?: string | null
           first_name?: string
           grade?: string | null
           id?: string
@@ -733,6 +780,8 @@ export type Database = {
           parental_consent_at?: string
           parental_consent_version?: string
           school_id?: string | null
+          // [LC-007 manual augment]
+          teacher_name?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -966,8 +1015,54 @@ export type Database = {
           },
         ]
       }
+      // [LC-007 manual augment — pending CLI regen]
+      my_students_with_progress: {
+        Row: {
+          id: string | null
+          parent_id: string | null
+          first_name: string | null
+          school_id: string | null
+          grade: string | null
+          teacher_name: string | null
+          list_id: string | null
+          parental_consent_at: string | null
+          parental_consent_version: string | null
+          created_at: string | null
+          school_trade_name: string | null
+          school_slug: string | null
+          list_school_year: number | null
+          total_items: number
+          owned_items: number
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      // [LC-007 manual augment — pending CLI regen]
+      register_student: {
+        Args: {
+          p_first_name: string
+          p_school_id: string
+          p_grade: string | null
+          p_teacher_name: string | null
+          p_consent_version: string
+        }
+        Returns: {
+          id: string
+          list_id: string | null
+          requires_list_selection: boolean
+        }[]
+      }
+      // [LC-007 manual augment — pending CLI regen]
+      soft_delete_student: {
+        Args: { p_student_id: string }
+        Returns: { id: string; deleted_at: string }[]
+      }
+      // [LC-007 manual augment — pending CLI regen]
+      toggle_owned_item: {
+        Args: { p_student_id: string; p_list_item_id: string }
+        Returns: { marked: boolean; marked_at: string | null }[]
+      }
       admin_change_school_status: {
         Args: {
           p_reason?: string

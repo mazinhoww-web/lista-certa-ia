@@ -62,6 +62,20 @@ Itens não-bloqueantes de dívida técnica, slices futuras conhecidas, e protoco
 **Solução:** instalar `react-helmet-async` (ou `vite-plugin-ssg` se quisermos SSR), adicionar Helmet em cada página pública com `title`, `description`, `og:title`, `og:description`, `og:image`, `og:url` derivados de `school.trade_name + city`. JSON-LD `EducationalOrganization` em `/escola/:slug` e `Schema.org/ItemList` em `/escola/:slug/lista/:listId`.
 **Quando atacar:** antes da primeira campanha de aquisição orgânica (provavelmente Phase 4).
 
+### TD-10 — Revisão jurídica do termo de consentimento parental (BLOQUEANTE para onboarding externo)
+**Origem:** LC-007
+**Estado atual:** Termo placeholder conservador hardcoded como `v1.2026.04` em `src/lib/parental-consent.ts`. Sem revisão de advogado especializado em LGPD/menor.
+**Solução:** contratar advogado LGPD para revisar texto do termo + termo de uso + RIPD. Versionar como `v2.YYYY.MM` após revisão.
+**Quando atacar:** ANTES de onboardar primeiro pai externo (não-interno). Para MVP com sócios + escolas amigas, risco contido.
+**Severidade:** 🔴 BLOQUEANTE para qualquer onboarding fora do círculo interno.
+
+### TD-11 — Validar retention de 90 dias com DPO/advogado
+**Origem:** LC-007
+**Estado atual:** Soft delete com retention de 90 dias hardcoded na cópia da UI ("será removido em até 90 dias"). Sem base legal documentada e sem cron de purge real.
+**Solução:** com advogado/DPO definir uma das duas opções: (a) reduzir para 24-48h e justificar como janela técnica de undo, OU (b) manter 90d com base legal explícita em RIPD (obrigação contratual, prevenção a fraude, etc). Implementar cron de purge real em qualquer dos dois cenários.
+**Quando atacar:** junto com TD-10.
+**Severidade:** 🔴 BLOQUEANTE — exposição direta a multa LGPD se ANPD auditar.
+
 ---
 
 ## Slices futuras conhecidas
