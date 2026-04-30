@@ -1,20 +1,22 @@
 // One of the 3 strategy cards. Color-coded per strategy (Lime / Coral /
 // Blue), shows the total in big lc-num typography, retailer breakdown,
 // optional partial-strategy banner, expandable item list, and a CTA
-// that opens the first available item's permalink in a new tab.
+// that navigates to the per-strategy /ir-para redirect page.
 //
-// CTA behavior:
-//   - Real ML retailer in winning slot → enabled, tracks click, opens.
+// CTA behavior (LC-009):
+//   - Real ML retailer in winning slot → enabled, tracks click, routes
+//     internally to /ir-para/:strategyId/:retailerKey.
 //   - Mostly mock retailers in winning slot → disabled with tooltip.
 // Tracking: useTrackStrategyClick fires regardless of disabled state so
 // we still measure intent on demo strategies (metadata.is_mock=true).
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { ChevronDown, ChevronUp, ExternalLink, Lock } from "lucide-react";
 import { CartItemRow } from "@/components/carrinho/CartItemRow";
 import { PartialStrategyBanner } from "@/components/carrinho/PartialStrategyBanner";
 import { useTrackStrategyClick } from "@/hooks/useTrackStrategyClick";
-import type { CartStrategy } from "@/types/cart";
+import type { CartStrategy, CartItemSource } from "@/types/cart";
 
 const STRATEGY_COPY: Record<
   CartStrategy["strategy"],
@@ -63,6 +65,12 @@ function pickCtaItem(strategy: CartStrategy) {
   return { item: anyAvail ?? null, allMock: !!anyAvail };
 }
 
+function retailerKeyForSource(source: CartItemSource): string {
+  // Today only ML has a redirect page; future retailers extend this map.
+  if (source === "mercadolibre") return "mercadolibre";
+  return "mercadolibre";
+}
+
 export function CartStrategyCard({ strategy }: { strategy: CartStrategy }) {
   const cfg = STRATEGY_COPY[strategy.strategy];
   const [open, setOpen] = useState(false);
@@ -70,20 +78,18 @@ export function CartStrategyCard({ strategy }: { strategy: CartStrategy }) {
   const { item: cta, allMock } = pickCtaItem(strategy);
   const ctaDisabled = !cta || allMock;
   const retailerEntries = Object.entries(strategy.retailers_summary);
+  const retailerKey = cta ? retailerKeyForSource(cta.source) : "mercadolibre";
+  const ctaHref = `/ir-para/${strategy.id}/${retailerKey}`;
 
-  const onCta = () => {
-    if (cta) {
-      trackClick.mutate({
-        studentId: strategy.student_id,
-        strategy: strategy.strategy,
-        mlItemId: cta.ml_item_id,
-        isMock: cta.is_mock,
-        permalink: cta.permalink,
-      });
-      if (!ctaDisabled && cta.permalink) {
-        window.open(cta.permalink, "_blank", "noopener,noreferrer");
-      }
-    }
+  const fireClickTrack = () => {
+    if (!cta) return;
+    trackClick.mutate({
+      studentId: strategy.student_id,
+      strategy: strategy.strategy,
+      mlItemId: cta.ml_item_id,
+      isMock: cta.is_mock,
+      permalink: cta.permalink,
+    });
   };
 
   const hasMockItem = strategy.items.some((i) => i.is_mock);
@@ -134,29 +140,27 @@ export function CartStrategyCard({ strategy }: { strategy: CartStrategy }) {
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={onCta}
-        disabled={ctaDisabled}
-        title={ctaDisabled ? "Disponível em breve" : undefined}
-        className={`mt-5 w-full h-11 px-4 rounded-xl text-sm font-semibold inline-flex items-center justify-center gap-2 transition-all ${
-          ctaDisabled
-            ? "bg-lc-surface border border-lc-border text-lc-mid cursor-not-allowed"
-            : "bg-lc-blue text-white hover:opacity-90"
-        }`}
-      >
-        {ctaDisabled ? (
-          <>
-            <Lock className="w-4 h-4" aria-hidden />
-            Disponível em breve
-          </>
-        ) : (
-          <>
-            <ExternalLink className="w-4 h-4" aria-hidden />
-            Comprar no {cta?.seller_name ?? "Mercado Livre"}
-          </>
-        )}
-      </button>
+      {ctaDisabled ? (
+        <button
+          type="button"
+          onClick={fireClickTrack}
+          disabled
+          title="Disponível em breve"
+          className="mt-5 w-full h-11 px-4 rounded-xl text-sm font-semibold inline-flex items-center justify-center gap-2 transition-all bg-lc-surface border border-lc-border text-lc-mid cursor-not-allowed"
+        >
+          <Lock className="w-4 h-4" aria-hidden />
+          Disponível em breve
+        </button>
+      ) : (
+        <Link
+          to={ctaHref}
+          onClick={fireClickTrack}
+          className="mt-5 w-full h-11 px-4 rounded-xl text-sm font-semibold inline-flex items-center justify-center gap-2 transition-all bg-lc-blue text-white hover:opacity-90"
+        >
+          <ExternalLink className="w-4 h-4" aria-hidden />
+          Comprar no Mercado Livre
+        </Link>
+      )}
 
       <button
         type="button"

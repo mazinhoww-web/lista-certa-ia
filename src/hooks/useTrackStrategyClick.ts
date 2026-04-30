@@ -1,10 +1,10 @@
-// Inserts a 'cart_strategy_clicked' row into analytics_events. user_id is
-// the parent (auth.uid()); never the student. metadata holds strategy
-// name + ml_item_id + is_mock flag for UTM-style segmentation.
+// LC-008 hook, refactored in LC-009 to delegate to the generic
+// useTrackEvent. The public API and the event_name written
+// ('cart_strategy_clicked') are preserved exactly so CartStrategyCard
+// keeps working without changes. Bonus: UTMs are now auto-merged via
+// the underlying generic hook.
 
-import { useMutation } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/contexts/AuthContext";
+import { useTrackEvent } from "@/hooks/useTrackEvent";
 import type { CartStrategyName } from "@/types/cart";
 
 export interface TrackStrategyClickVars {
@@ -16,12 +16,12 @@ export interface TrackStrategyClickVars {
 }
 
 export function useTrackStrategyClick() {
-  const { user } = useAuth();
-  return useMutation<void, Error, TrackStrategyClickVars>({
-    mutationFn: async (vars) => {
-      const { error } = await supabase.from("analytics_events").insert({
-        event_name: "cart_strategy_clicked",
-        user_id: user?.id ?? null,
+  const track = useTrackEvent();
+  return {
+    isPending: track.isPending,
+    mutate: (vars: TrackStrategyClickVars) => {
+      track.mutate({
+        eventName: "cart_strategy_clicked",
         metadata: {
           // PII safety: nothing here can be tied back to the student
           // beyond the opaque student_id (no first_name, no school name).
@@ -32,12 +32,6 @@ export function useTrackStrategyClick() {
           permalink: vars.permalink,
         },
       });
-      if (error) {
-        console.error("[useTrackStrategyClick] insert failed", {
-          message: error.message,
-        });
-        // Tracking failures must NOT block the click flow.
-      }
     },
-  });
+  };
 }
