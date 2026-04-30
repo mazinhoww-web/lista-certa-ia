@@ -7,7 +7,7 @@
 
 import { useEffect } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useSchool } from "@/hooks/useSchool";
 import { Logo } from "@/components/shared/Logo";
@@ -87,6 +87,34 @@ export default function StatusEscolaPage() {
       </section>
 
       <SchoolDataCard school={school} />
+
+      {/* LC-002.5: link pra gerenciar co-admins */}
+      <section className="mt-6 rounded-2xl bg-lc-white border border-lc-border p-5 md:p-6">
+        <div className="flex items-start gap-4">
+          <div
+            className="shrink-0 w-10 h-10 rounded-full bg-lc-blue/10 text-lc-blue inline-flex items-center justify-center"
+            aria-hidden
+          >
+            <Users className="w-5 h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base font-bold text-lc-ink">
+              Administradores
+            </h2>
+            <p className="mt-1 text-sm text-lc-mid">
+              Convide outras pessoas da escola para administrar junto com
+              você.
+            </p>
+          </div>
+          <Link
+            to={`/escola/${school.id}/admins`}
+            className="shrink-0 inline-flex items-center gap-1 h-9 px-3 rounded-xl bg-lc-white border border-lc-border text-lc-ink text-xs font-semibold hover:bg-lc-surface transition-all"
+          >
+            Gerenciar →
+          </Link>
+        </div>
+      </section>
+
       <StatusFooter school={school} />
     </PageShell>
   );

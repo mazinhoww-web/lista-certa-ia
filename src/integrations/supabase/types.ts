@@ -624,6 +624,8 @@ export type Database = {
       school_admins: {
         Row: {
           created_at: string | null
+          // [LC-002.5 manual augment — pending CLI regen]
+          deleted_at: string | null
           id: string
           role: string | null
           school_id: string
@@ -631,6 +633,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          // [LC-002.5 manual augment — pending CLI regen]
+          deleted_at?: string | null
           id?: string
           role?: string | null
           school_id: string
@@ -638,6 +642,8 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          // [LC-002.5 manual augment — pending CLI regen]
+          deleted_at?: string | null
           id?: string
           role?: string | null
           school_id?: string
@@ -666,6 +672,80 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      // [LC-002.5 manual augment — pending CLI regen]
+      school_admin_audit_log: {
+        Row: {
+          action: "school_admin_invited" | "school_admin_redeemed" | "school_admin_removed"
+          actor_id: string
+          created_at: string
+          id: string
+          invite_id: string | null
+          metadata: Json
+          school_id: string
+          target_id: string | null
+        }
+        Insert: {
+          action: "school_admin_invited" | "school_admin_redeemed" | "school_admin_removed"
+          actor_id: string
+          created_at?: string
+          id?: string
+          invite_id?: string | null
+          metadata?: Json
+          school_id: string
+          target_id?: string | null
+        }
+        Update: {
+          action?: "school_admin_invited" | "school_admin_redeemed" | "school_admin_removed"
+          actor_id?: string
+          created_at?: string
+          id?: string
+          invite_id?: string | null
+          metadata?: Json
+          school_id?: string
+          target_id?: string | null
+        }
+        Relationships: []
+      }
+      // [LC-002.5 manual augment — pending CLI regen]
+      school_admin_invites: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          redeemed_at: string | null
+          redeemed_by: string | null
+          revoked_at: string | null
+          revoked_reason: "admin_removed" | "manual" | null
+          school_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at: string
+          id?: string
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          revoked_at?: string | null
+          revoked_reason?: "admin_removed" | "manual" | null
+          school_id: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          revoked_at?: string | null
+          revoked_reason?: "admin_removed" | "manual" | null
+          school_id?: string
+          token?: string
+        }
+        Relationships: []
       }
       school_status_log: {
         Row: {
@@ -1201,6 +1281,15 @@ export type Database = {
           status: Database["public"]["Enums"]["school_status"]
         }[]
       }
+      // [LC-002.5 manual augment — pending CLI regen]
+      create_admin_invite: {
+        Args: { p_school_id: string }
+        Returns: {
+          invite_id: string
+          token: string
+          expires_at: string
+        }[]
+      }
       create_list_with_items: {
         Args: {
           p_grade: string
@@ -1230,6 +1319,19 @@ export type Database = {
           published_at: string
           status: Database["public"]["Enums"]["list_status"]
         }[]
+      }
+      // [LC-002.5 manual augment — pending CLI regen]
+      redeem_admin_invite: {
+        Args: { p_token: string }
+        Returns: {
+          school_id: string
+          idempotent: boolean
+        }[]
+      }
+      // [LC-002.5 manual augment — pending CLI regen]
+      remove_school_admin: {
+        Args: { p_school_id: string; p_target_user_id: string }
+        Returns: undefined
       }
       search_approved_schools: {
         Args: {
