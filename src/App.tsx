@@ -30,6 +30,7 @@ import EscolaPublicaListaPage from "./pages/EscolaPublicaListaPage.tsx";
 import MeusAlunosPage from "./pages/aluno/MeusAlunosPage.tsx";
 import CadastrarAlunoPage from "./pages/aluno/CadastrarAlunoPage.tsx";
 import AlunoListaPage from "./pages/aluno/AlunoListaPage.tsx";
+import StudentCartPage from "./pages/parent/StudentCartPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -166,6 +167,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <AlunoListaPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/meus-alunos/:studentId/carrinho"
+              element={
+                <ProtectedRoute>
+                  <StudentCartPage />
                 </ProtectedRoute>
               }
             />

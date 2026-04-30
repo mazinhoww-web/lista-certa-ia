@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ListChecks, Trash2 } from "lucide-react";
+import { ListChecks, ShoppingCart, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -96,13 +96,22 @@ export function StudentCard({ row }: { row: MyStudentRow }) {
               />
             </div>
           </div>
-          <Link
-            to={`/meus-alunos/${row.id}/lista`}
-            className="mt-4 inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-lc-blue text-white text-xs font-semibold hover:opacity-90 transition-all"
-          >
-            <ListChecks className="w-4 h-4" aria-hidden />
-            Ver lista de {row.first_name ?? "aluno"}
-          </Link>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link
+              to={`/meus-alunos/${row.id}/lista`}
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-lc-blue text-white text-xs font-semibold hover:opacity-90 transition-all"
+            >
+              <ListChecks className="w-4 h-4" aria-hidden />
+              Ver lista de {row.first_name ?? "aluno"}
+            </Link>
+            <Link
+              to={`/meus-alunos/${row.id}/carrinho`}
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-lc-white border border-lc-border text-lc-ink text-xs font-semibold hover:bg-lc-surface transition-all"
+            >
+              <ShoppingCart className="w-4 h-4" aria-hidden />
+              Ver carrinho
+            </Link>
+          </div>
         </>
       ) : (
         <p className="mt-4 text-xs text-lc-mid">
