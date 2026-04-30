@@ -2,7 +2,7 @@
 
 Itens não-bloqueantes de dívida técnica, slices futuras conhecidas, e protocolos firmados ao longo da execução. Atualizado conforme as slices fecham.
 
-**Última atualização:** 2026-04-30 (pós bug bounty sessões A-D — 14 bugs em 4 TDs)
+**Última atualização:** 2026-04-30 (pós LC-002.5 — co-admin via link compartilhável)
 
 ---
 
@@ -236,6 +236,18 @@ Componente único, fix único possível.
 - Padronizar altura de skeleton por componente real do card (medir e fixar via design tokens).
 - Criar componente `<EmptyState>` compartilhado com props `icon`, `title`, `subtitle?`, `cta?`.
 **Quando atacar:** P2/P3. Backlog. Pode ser dividido em 2 PRs (navegação P2 + skeletons/empty P3) ou um PR grande de polish. Decidir na hora.
+
+### TD-36 — Cron de purge para `school_admin_invites` expirados/revogados
+**Origem:** LC-002.5
+**Estado atual:** invites com `expires_at < NOW()` ou `revoked_at IS NOT NULL` ficam em `school_admin_invites` indefinidamente. Hoje sem cron de purge. Tabela tende a crescer linearmente com adoção.
+**Solução:** Supabase scheduled function (`pg_cron` ou Edge Function por cron) que faz `DELETE FROM school_admin_invites WHERE (expires_at < NOW() - INTERVAL '7 days') OR (revoked_at < NOW() - INTERVAL '30 days')` semanalmente. Manter histórico curto pra investigar abuso eventual mas não acumular pra sempre.
+**Quando atacar:** quando `school_admin_invites` ultrapassar ~1k linhas em produção.
+
+### TD-37 — Histórico de admin events na UI (`school_admin_audit_log`)
+**Origem:** LC-002.5
+**Estado atual:** todos os eventos de invite/redeem/remove vão pra `school_admin_audit_log` mas a UI atual de `/escola/:id/admins` mostra apenas o estado presente (admins ativos). Quem removeu quem, quando e por que? Hoje só via SQL Editor.
+**Solução:** segunda aba/seção em `/escola/:id/admins` chamada "Histórico" mostrando os últimos 50 events da escola, com nomes resolvidos via JOIN com profiles. Já temos RLS coberta (admins ativos da escola podem SELECT). Esforço: ~1 hook + 1 componente + 1 sub-rota.
+**Quando atacar:** primeira ocorrência de "preciso saber quem removeu o admin X em produção".
 
 ---
 

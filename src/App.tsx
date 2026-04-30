@@ -24,6 +24,8 @@ import AdminEscolaDetailPage from "./pages/admin/AdminEscolaDetailPage.tsx";
 import EscolaListasPage from "./pages/escola/EscolaListasPage.tsx";
 import EscolaListaNovaPage from "./pages/escola/EscolaListaNovaPage.tsx";
 import EscolaListaDetailPage from "./pages/escola/EscolaListaDetailPage.tsx";
+import AdminsPage from "./pages/escola/AdminsPage.tsx";
+import RedeemAdminInvitePage from "./pages/escola/RedeemAdminInvitePage.tsx";
 import BuscarPage from "./pages/BuscarPage.tsx";
 import EscolaPublicaPage from "./pages/EscolaPublicaPage.tsx";
 import EscolaPublicaListaPage from "./pages/EscolaPublicaListaPage.tsx";
@@ -97,6 +99,31 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <StatusEscolaPage />
+                </ProtectedRoute>
+              }
+            />
+            {/*
+              LC-002.5 co-admin.
+              /escola/:id/admins — gerenciar admins da escola.
+              /escola/admin-convite/:token — aceitar convite (caller anon
+              cai em /login com state.from preservado pelo ProtectedRoute).
+              React Router v6 ranqueia segmento literal acima de param,
+              então 'admin-convite' bate antes de :slug (rota pública mais
+              abaixo).
+            */}
+            <Route
+              path="/escola/:id/admins"
+              element={
+                <ProtectedRoute>
+                  <AdminsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/escola/admin-convite/:token"
+              element={
+                <ProtectedRoute>
+                  <RedeemAdminInvitePage />
                 </ProtectedRoute>
               }
             />
