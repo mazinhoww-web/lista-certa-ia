@@ -2,7 +2,7 @@
 
 Itens não-bloqueantes de dívida técnica, slices futuras conhecidas, e protocolos firmados ao longo da execução. Atualizado conforme as slices fecham.
 
-**Última atualização:** 2026-04-29 (pós LC-004)
+**Última atualização:** 2026-04-30 (pós bug bounty sessões A-D — 14 bugs em 4 TDs)
 
 ---
 
@@ -171,6 +171,71 @@ Itens não-bloqueantes de dívida técnica, slices futuras conhecidas, e protoco
 **Estado atual:** `ML_HOSTS` está duplicada em `src/lib/wrapPermalink.ts` (front) e `supabase/functions/build-cart/index.ts` (edge). Ambos arquivos têm comentário gritante `// SYNC: ...` apontando o outro lado.
 **Solução:** test que lê o source do edge function via `fs.readFileSync` e verifica que a constante `ML_HOSTS` do front é subset/superset/igual à do edge. Roda no `npm test`.
 **Quando atacar:** primeira vez que mudar a allowlist (adicionar `*.kalunga.com.br` em LC-013 etc) — esquecer de sincronizar é o que TD-31 evita.
+
+### TD-32 — Auth redirect e jornada de compartilhamento quebrada
+**Origem:** Bug bounty Sessão A (cenário 1.1) + Sessão B (cenário 3.5). Bugs BUG-001 e BUG-008.
+**Estado atual:** Dois bugs P1 que se compõem num desastre de UX:
+
+1. `src/pages/AuthCallbackPage.tsx:51` tem fallback `sessionStorage.getItem(POST_LOGIN_KEY) ?? "/minha-conta"`. Usuário que acessa `/login` direto (sem vir de rota protegida) cai em `/minha-conta` em vez de `/`.
+2. `src/App.tsx:215-221` envolve `/r/:shortId` em `<ProtectedRoute>`, exigindo login pra acessar short link público. Quebra LC-009 (compartilhamento por WhatsApp).
+
+Combinação: pai recebe link no WhatsApp → `/r/abc` → forçado a logar → cai em `/minha-conta` → nunca chega no carrinho. Funil viral zerado.
+**Solução:**
+- Mudar fallback de `AuthCallbackPage.tsx` para `?? "/"`.
+- Remover `<ProtectedRoute>` da rota `/r/:shortId`. RLS do Supabase + lógica de `useStrategyByShortId` já protegem o dado.
+- Adicionar testes manuais de regressão pros 2 cenários no smoke test.
+**Quando atacar:** P1. Antes do primeiro usuário externo. PR único agrupando os dois fixes — um corrige o sintoma do outro.
+**Severidade:** 🔴 BLOQUEANTE — zera o funil viral de compartilhamento por WhatsApp; sem isso, LC-009 não cumpre sua promessa de redirect funnel.
+
+### TD-33 — Header da landing auth-aware
+**Origem:** Bug bounty Sessão A (cenários 2.1, 2.2b) + Sessão D. Bugs BUG-002, BUG-003, BUG-004, BUG-006.
+**Estado atual:** `src/components/landing/Header.tsx` foi construído sem consumir `useAuth()`. Quatro sintomas:
+
+1. Header mostra "Entrar com Google" para usuário já logado (BUG-002).
+2. Logo usa `<a href="/">` em vez de `<Link to="/">` causando full reload com perda de estado React (BUG-003).
+3. CTA "Cadastrar minha escola" da seção "Para escolas" leva para `/login?role=school` mesmo logado (BUG-004).
+4. Nenhum CTA da landing checa estado de auth antes de redirecionar (BUG-006, padrão geral).
+
+Componente único, fix único possível.
+**Solução:**
+- Importar `useAuth()` em `Header.tsx`.
+- Renderização condicional: se `user && !loading` → "Minha conta" → `/minha-conta`; senão → "Entrar com Google" → `/login`.
+- Trocar `<a href="/">` por `<Link to="/">` no logo.
+- Aplicar mesmo padrão condicional nos CTAs "Para escolas" da landing (rota `/escola/cadastrar` se logado, `/login?role=school` se não).
+- Auditar grep `<a href="/` em `src/` — só `Header.tsx` deve aparecer (já validado em vizinhança da Sessão A).
+**Quando atacar:** P1. Antes do primeiro usuário externo. PR único.
+
+### TD-34 — Validação e proteção de submit em formulários
+**Origem:** Bug bounty Sessão B (cenários 9.4-9.6) + Sessão C (cenário 5.7) + Sessão A (cenário 1.8). Bugs BUG-005, BUG-009, BUG-010, BUG-011, BUG-012.
+**Estado atual:** Cinco gaps de validação P2 distribuídos em forms críticos:
+
+1. `StudentForm.tsx:19` — `firstName` aceita strings perigosas (SQL injection literal, XSS, zero-width chars). Backend Supabase usa prepared statements, então SQL não vaza, mas se nome for renderizado em HTML sem escape, XSS é possível.
+2. `CadastrarEscolaPage.tsx` — regex CEP `/^\d{5}-?\d{3}$/` aceita `00000-000` como válido.
+3. `CadastrarEscolaPage.tsx` — campo `number` (endereço) sem regex, aceita qualquer string até 10 chars.
+4. `CadastrarAlunoPage.tsx` e `CadastrarEscolaPage.tsx` — botão de submit usa `disabled={pending}` mas em race condition (clique no exato ms antes do estado atualizar) pode submeter 2x.
+5. `LoginPage.tsx:32-35` — botão Google fica `disabled={loading}` permanente se popup OAuth for cancelado, exigindo refresh.
+**Solução:**
+- Adicionar `.transform(s => s.replace(/[<>"'&]/g, '').trim())` nos schemas Zod de campos de texto livre (firstName, school name, address fields).
+- CEP: validar via consulta ViaCEP no blur, ou regex mais restritiva excluindo padrões inválidos óbvios (`00000-000`, `99999-999`).
+- Endereço número: regex `/^[0-9A-Za-z\s\-/]+$/` aceitando "S/N", "123-A".
+- Submit: flag `isSubmitting` no handler que retorna early se já em flight, com `try/finally` resetando.
+- LoginPage: timeout de 5s pra resetar `loading` mesmo se OAuth nunca completar.
+**Quando atacar:** P2. Bundle único antes do primeiro pai cadastrar aluno em produção. Não bloqueia release de smoke test interno.
+
+### TD-35 — Consistência cross-feature em navegação e estados
+**Origem:** Bug bounty Sessão A (achado durante simulação) + Sessão D (cenários 6.4, inconsistências P3). Bugs BUG-007, BUG-013, e dois P3 (skeletons heterogêneos, empty states heterogêneos).
+**Estado atual:** Inconsistências P2/P3 que não bloqueiam mas erodem qualidade percebida:
+
+1. `CadastrarEscolaPage.tsx` numera seções 1 → 3 → 4. A seção 2 (dados INEP, condicional) aparece visualmente sem número. Confunde usuário.
+2. Botão "Voltar" usa 7 textos diferentes através do app: "Voltar", "Voltar para listas", "Voltar para a busca", "Voltar para a fila", "Voltar para meus alunos", "Voltar para o início", "Voltar para o carrinho". Sem padrão. Usuário não constrói modelo mental.
+3. Skeletons usam alturas diferentes em páginas diferentes (`h-32`, `h-28`, `h-24`) sem relação com altura real do card carregado.
+4. Empty states com estruturas diferentes: alguns com ícone, outros sem. Alguns com subtítulo, outros sem.
+**Solução:**
+- Renumerar seções de `CadastrarEscolaPage.tsx` (1-2-3-4) ou remover numeração e usar labels.
+- Padronizar texto de "Voltar" em duas variações: `"Voltar"` (curto, hierarquia óbvia) e `"← <nome da página anterior>"` (contexto não óbvio). Documentar em CLAUDE.md ou DESIGN.md.
+- Padronizar altura de skeleton por componente real do card (medir e fixar via design tokens).
+- Criar componente `<EmptyState>` compartilhado com props `icon`, `title`, `subtitle?`, `cta?`.
+**Quando atacar:** P2/P3. Backlog. Pode ser dividido em 2 PRs (navegação P2 + skeletons/empty P3) ou um PR grande de polish. Decidir na hora.
 
 ---
 
