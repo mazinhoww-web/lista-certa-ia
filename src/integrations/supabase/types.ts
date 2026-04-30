@@ -14,6 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
+      // [LC-008 manual augment — pending CLI regen]
+      analytics_events: {
+        Row: {
+          id: string
+          event_name: string
+          user_id: string | null
+          metadata: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          event_name: string
+          user_id?: string | null
+          metadata?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          event_name?: string
+          user_id?: string | null
+          metadata?: Json
+          created_at?: string
+        }
+        Relationships: []
+      }
+      // [LC-008 manual augment — pending CLI regen]
+      cart_strategies: {
+        Row: {
+          id: string
+          student_id: string
+          list_id: string
+          strategy: "cheapest" | "fastest" | "recommended"
+          items: Json
+          total_cents: number
+          total_items: number
+          unavailable_items: number
+          has_partial_strategy: boolean
+          retailers_summary: Json
+          generated_at: string
+          expires_at: string
+        }
+        Insert: {
+          id?: string
+          student_id: string
+          list_id: string
+          strategy: "cheapest" | "fastest" | "recommended"
+          items: Json
+          total_cents?: number
+          total_items?: number
+          unavailable_items?: number
+          has_partial_strategy?: boolean
+          retailers_summary?: Json
+          generated_at?: string
+          expires_at?: string
+        }
+        Update: {
+          id?: string
+          student_id?: string
+          list_id?: string
+          strategy?: "cheapest" | "fastest" | "recommended"
+          items?: Json
+          total_cents?: number
+          total_items?: number
+          unavailable_items?: number
+          has_partial_strategy?: boolean
+          retailers_summary?: Json
+          generated_at?: string
+          expires_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_strategies_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cart_strategies_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       carts: {
         Row: {
           created_at: string | null
@@ -295,6 +381,8 @@ export type Database = {
           procon_status: Database["public"]["Enums"]["procon_severity"] | null
           quantity: number
           specification: string | null
+          // [LC-008 manual augment — pending CLI regen]
+          suggested_query: string | null
           unit: string | null
         }
         Insert: {
@@ -309,6 +397,8 @@ export type Database = {
           procon_status?: Database["public"]["Enums"]["procon_severity"] | null
           quantity?: number
           specification?: string | null
+          // [LC-008 manual augment]
+          suggested_query?: string | null
           unit?: string | null
         }
         Update: {
@@ -323,6 +413,8 @@ export type Database = {
           procon_status?: Database["public"]["Enums"]["procon_severity"] | null
           quantity?: number
           specification?: string | null
+          // [LC-008 manual augment]
+          suggested_query?: string | null
           unit?: string | null
         }
         Relationships: [
@@ -414,6 +506,34 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      // [LC-008 manual augment — pending CLI regen]
+      ml_search_cache: {
+        Row: {
+          id: string
+          query_normalized: string
+          source: "mercadolibre"
+          results: Json
+          fetched_at: string
+          expires_at: string
+        }
+        Insert: {
+          id?: string
+          query_normalized: string
+          source?: "mercadolibre"
+          results: Json
+          fetched_at?: string
+          expires_at?: string
+        }
+        Update: {
+          id?: string
+          query_normalized?: string
+          source?: "mercadolibre"
+          results?: Json
+          fetched_at?: string
+          expires_at?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -821,6 +941,8 @@ export type Database = {
           accessed_by: string | null
           action: string
           id: string
+          // [LC-008 manual augment — pending CLI regen]
+          metadata: Json
           student_id: string
         }
         Insert: {
@@ -828,6 +950,8 @@ export type Database = {
           accessed_by?: string | null
           action: string
           id?: string
+          // [LC-008 manual augment]
+          metadata?: Json
           student_id: string
         }
         Update: {
@@ -835,6 +959,8 @@ export type Database = {
           accessed_by?: string | null
           action?: string
           id?: string
+          // [LC-008 manual augment]
+          metadata?: Json
           student_id?: string
         }
         Relationships: [

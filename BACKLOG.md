@@ -76,6 +76,60 @@ Itens não-bloqueantes de dívida técnica, slices futuras conhecidas, e protoco
 **Quando atacar:** junto com TD-10.
 **Severidade:** 🔴 BLOQUEANTE — exposição direta a multa LGPD se ANPD auditar.
 
+### TD-12 — "Marca paga prioridade" no Recommended
+**Origem:** LC-008
+**Estado atual:** Recommended faz score `0.5*price + 0.3*Full + 0.2*seller`. Nenhum sinal de receita.
+**Solução:** quando catálogo próprio/parcerias virem, adicionar coluna `sponsored_priority` (0-1 ou enum) consumida pelo algoritmo como bônus capped (ex.: +0.1 ao score). Disclosure obrigatória na UI ("patrocinado").
+**Quando atacar:** junto com primeiro contrato comercial de marca.
+
+### TD-13 — Catálogo Kalunga real (substituir mock)
+**Origem:** LC-008 (adendo mock visual)
+**Estado atual:** preços Kalunga gerados deterministicamente a partir de ML real (`is_mock=true`). Banner "DEMO" + CTA desabilitado.
+**Solução:** integrar API ou catálogo manual scraped, gravar em uma tabela `kalunga_catalog`. Substituir o branch de mock no `build-cart` por leitura real.
+**Quando atacar:** após contrato comercial Kalunga assinado.
+
+### TD-14 — Catálogo Magalu real (substituir mock)
+**Origem:** LC-008 (adendo)
+**Estado atual:** idêntico ao TD-13 mas para Magazine Luiza.
+**Solução:** mesmo padrão de TD-13.
+**Quando atacar:** após contrato comercial Magalu.
+
+### TD-15 — Cron de purge `ml_search_cache`
+**Origem:** LC-008
+**Estado atual:** entradas com `expires_at < NOW()` ficam armazenadas indefinidamente como fallback stale (até 7d). Sem job de purge real após 7d.
+**Solução:** Supabase scheduled function (`pg_cron` ou Edge Function por cron) que faz `DELETE FROM ml_search_cache WHERE fetched_at < NOW() - INTERVAL '7 days'` diariamente.
+**Quando atacar:** quando `ml_search_cache` ultrapassar ~10k linhas em produção.
+
+### TD-16 — Métricas operacionais de carrinho
+**Origem:** LC-008
+**Estado atual:** `cart_strategies` armazena `unavailable_items` e `has_partial_strategy` por geração, mas nada agrega em painel admin.
+**Solução:** view `admin_cart_health` com `% unavailable`, `% partial_strategies`, `avg latency build-cart`. Dashboard simples no painel admin.
+**Quando atacar:** quando volume passar de ~50 carrinhos/dia.
+
+### TD-17 — Contract tests para ML API
+**Origem:** LC-008
+**Estado atual:** `searchML()` parsea `id, title, price, permalink, thumbnail, seller.*, shipping.logistic_type, available_quantity` confiando que ML mantém o shape. Mudança no contrato quebra silenciosamente.
+**Solução:** snapshot test do shape (Vitest com `toMatchInlineSnapshot`). Roda contra fixture local + opcionalmente contra ML real em CI nightly.
+**Quando atacar:** após primeira incidência de quebra ou antes de plano free virar pago.
+
+### TD-18 — Substituir mock Kalunga por catálogo real
+**Origem:** LC-008 (adendo) — duplica TD-13 com nuance
+**Estado atual:** branch de mock no `build-cart` quando `ENABLE_RETAILER_MOCKS=true`.
+**Solução:** flag desligada + tabela `kalunga_catalog` populada (ver TD-13).
+**Quando atacar:** com TD-13.
+
+### TD-19 — Substituir mock Magalu por catálogo real
+**Origem:** LC-008 (adendo) — duplica TD-14 com nuance
+**Estado atual:** análogo a TD-18.
+**Solução:** análogo a TD-14.
+**Quando atacar:** com TD-14.
+
+### TD-20 — Feature flag de demo por usuário
+**Origem:** LC-008 (adendo)
+**Estado atual:** flag `VITE_ENABLE_RETAILER_MOCKS` é global.
+**Solução:** quando reclamação de pai aparecer ("achei que era preço real"), gate a flag por user ou por escola via tabela `feature_flags`. Pais opt-in para ver demo, default off.
+**Quando atacar:** apenas se houver reclamação. Sem investimento preventivo.
+
 ---
 
 ## Slices futuras conhecidas
